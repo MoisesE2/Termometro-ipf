@@ -1,103 +1,166 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { Thermometer } from '@/components/Thermometer';
+import { StatsCard } from '@/components/StatsCard';
+import { FaUsers, FaDollarSign, FaBullseye, FaChartLine, FaHeart } from 'react-icons/fa';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [currentQuotas, setCurrentQuotas] = useState(0);
+  const [isSimulating, setIsSimulating] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Configurações da meta
+  const totalQuotas = 6000;
+  const quotaValue = 200; // R$ 200,00 por cota
+  const goalAmount = totalQuotas * quotaValue; // R$ 1.200.000,00
+  
+  // Cálculos baseados nas cotas atuais
+  const raisedAmount = currentQuotas * quotaValue;
+  const percentage = (currentQuotas / totalQuotas) * 100;
+
+  // Função para formatar moeda
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  // Função para iniciar simulação
+  const handleStartSimulation = () => {
+    if (isSimulating) return;
+    
+    setIsSimulating(true);
+    
+    const duration = 5000; // 5 segundos
+    const targetQuotas = Math.floor(Math.random() * 1000) + 500; // Entre 500 e 1500 cotas
+    const steps = 50;
+    const increment = targetQuotas / steps;
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+      currentStep++;
+      const newQuotas = Math.floor(increment * currentStep);
+      setCurrentQuotas(prev => Math.min(prev + newQuotas, totalQuotas));
+      
+      if (currentStep >= steps) {
+        clearInterval(interval);
+        setIsSimulating(false);
+      }
+    }, duration / steps);
+  };
+
+  // Função para reiniciar
+  const handleReset = () => {
+    setCurrentQuotas(0);
+    setIsSimulating(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 relative">
+      {/* Ícone de coração no canto superior direito */}
+      <div className="absolute top-8 right-8 z-10">
+        <div className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-200 hover:shadow-lg transition-shadow">
+          <FaHeart className="text-teal-500 text-xl" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
+            Termômetro de Arrecadação
+          </h1>
+          
+          <p className="text-2xl text-teal-600 italic mb-6">
+            &ldquo;Alargando Fronteiras&rdquo;
+          </p>
+          
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Acompanhe em tempo real nosso progresso para a meta de{' '}
+            <span className="font-semibold text-teal-700">
+              {formatCurrency(goalAmount)}
+            </span>
+            !
+          </p>
+        </div>
+
+        {/* Conteúdo Principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
+          {/* Termômetro - Centralizado */}
+          <div className="lg:col-span-1 flex justify-center">
+            <div className="bg-white rounded-3xl shadow-xl p-12 border border-gray-100">
+              <Thermometer percentage={percentage} animated={true} />
+            </div>
+          </div>
+
+          {/* Estatísticas - Lado direito */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+              <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+                Nosso Progresso
+              </h2>
+              <p className="text-center text-gray-600 mb-10 text-lg">
+                Uma cota de {formatCurrency(quotaValue)} por um grande objetivo!
+              </p>
+
+              {/* Grid de Estatísticas */}
+              <div className="grid grid-cols-2 gap-8 mb-10">
+                <StatsCard
+                  icon={<FaUsers className="text-4xl" />}
+                  title="Cotas Alargadas"
+                  value={`${currentQuotas.toLocaleString()} / ${totalQuotas.toLocaleString()}`}
+                />
+                
+                <StatsCard
+                  icon={<FaDollarSign className="text-4xl" />}
+                  title="Valor Arrecadado"
+                  value={formatCurrency(raisedAmount)}
+                />
+                
+                <StatsCard
+                  icon={<FaBullseye className="text-4xl" />}
+                  title="Meta"
+                  value={formatCurrency(goalAmount)}
+                />
+                
+                <StatsCard
+                  icon={<FaChartLine className="text-4xl" />}
+                  title="Alcançado"
+                  value={`${percentage.toFixed(2)}%`}
+                />
+              </div>
+
+              {/* Botões */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleStartSimulation}
+                  disabled={isSimulating}
+                  className={`flex-1 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 ${
+                    isSimulating
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-teal-500 hover:bg-teal-600 hover:scale-105 active:scale-95'
+                  } text-white shadow-lg`}
+                >
+                  {isSimulating ? 'Simulando...' : 'Iniciar Simulação'}
+                </button>
+                
+                <button
+                  onClick={handleReset}
+                  disabled={isSimulating}
+                  className={`flex-1 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 ${
+                    isSimulating
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white hover:bg-gray-50 hover:scale-105 active:scale-95 border-2 border-gray-300'
+                  } text-gray-700 shadow-lg`}
+                >
+                  Reiniciar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
