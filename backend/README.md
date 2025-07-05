@@ -137,3 +137,31 @@ backend/
 - **Logs estruturados** com Pino
 - **Graceful shutdown** implementado
 - **SSL/TLS** pronto para produção 
+
+# API Termômetro de Arrecadação
+
+API RESTful e WebSocket para acompanhamento em tempo real do progresso de metas de arrecadação, com endpoints públicos para consulta e endpoints administrativos para gerenciamento.
+
+## 📋 Especificação OpenAPI 3.0
+
+A API segue o padrão OpenAPI 3.0 e está dividida em quatro grupos principais de endpoints:
+
+### 1. Status Público
+- Endpoints abertos para consulta do status atual do termômetro (valor arrecadado, meta, progresso, etc.)
+
+### 2. Autenticação
+- `POST /auth/login` - Autentica administradores e retorna token JWT
+  - Requer email e senha
+  - Retorna token para acesso aos endpoints restritos
+
+### 3. Gerenciamento de Cotas (Admin)
+- `POST /admin/cotas` - Cria nova cota de arrecadação
+- `GET /admin/cotas` - Lista todas as cotas cadastradas
+- `DELETE /admin/cotas?id={id}` - Remove uma cota específica
+
+### 4. Gerenciamento de Metas (Admin)
+- `POST /admin/metas` - Ajusta a meta de arrecadação
+- `GET /admin/metas` - Consulta a meta atual
+
+## 🔒 Autenticação
+Endpoints administrativos requerem autenticação via Bearer Token (JWT) no header:
