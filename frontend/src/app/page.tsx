@@ -139,7 +139,7 @@ export default function Home() {
                   className={`flex-1 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 ${
                     isSimulating
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-teal-500 hover:bg-teal-600 hover:scale-105 active:scale-95'
+                      : 'bg-[#1F5830] hover:bg-teal-600 hover:scale-105 active:scale-95'
                   } text-white shadow-lg`}
                 >
                   {isSimulating ? 'Simulando...' : 'Iniciar Simulação'}
