@@ -1,0 +1,384 @@
+openapi: 3.0.0
+info:
+  title: API do Termômetro de Arrecadação
+  description: >
+    API RESTful e WebSocket para o acompanhamento em tempo real do progresso de uma meta de arrecadação.
+    Inclui endpoints públicos para visualização e endpoints administrativos para gerenciamento.
+  version: 1.0.0
+servers:
+  - url: https://api.seutermometro.com/v1
+    description: Servidor de Produção
+  - url: http://localhost:3000/v1
+    description: Servidor de Desenvolvimento Local
+tags:
+  - name: Status Público
+    description: Endpoints para consulta do status do termômetro (acesso público).
+  - name: Autenticação
+    description: Endpoints para login de administradores.
+  - name: Gerenciamento de Cotas (Admin)
+    description: Endpoints para adicionar, listar e remover cotas de arrecadação (acesso restrito).
+  - name: Gerenciamento da Meta (Admin)
+    description: Endpoints para ajustar a meta e reiniciar o termômetro (acesso restrito).
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Autenticar Administrador
+      description: Autentica um usuário administrador e retorna um token JWT para acesso a endpoints restritos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login bem-sucedido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Credenciais inválidas."
+        '500':
+          description: Erro interno do servidor.
+
+  /status:
+    get:
+      tags:
+        - Status Público
+      summary: Obter Status do Termômetro
+      description: >
+        Retorna o estado atual do termômetro de arrecadação para exibição pública,
+        incluindo cotas, valores e porcentagem alcançada.
+      responses:
+        '200':
+          description: Status atual do termômetro.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermometroStatus'
+        '500':
+          description: Erro inesperado no servidor.
+
+  /admin/cotas:
+    post:
+      tags:
+        - Gerenciamento de Cotas (Admin)
+      summary: Registrar Nova Cota
+      description: >
+        Permite a um administrador adicionar manualmente novas cotas e seus valores ao sistema.
+        Isso atualiza o progresso do termômetro.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantidadeCotas:
+                  type: integer
+                  description: > 
+                    Número de cotas a serem adicionadas (ex: 1 cota).
+                  example: 1
+                valorPorCota:
+                  type: number
+                  format: float
+                  description: > 
+                    Valor unitário de cada cota adicionada (ex: 200.00).
+                  example: 200.00
+                descricao:
+                  type: string
+                  description: Descrição opcional ou identificação da origem da cota.
+                  nullable: true
+                  example: "Doação de Empresa X"
+              required:
+                - quantidadeCotas
+                - valorPorCota
+      responses:
+        '201':
+          description: Cota registrada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CotaItem'
+        '400':
+          description: Dados inválidos na requisição.
+        '401':
+          description: Token de autenticação ausente ou inválido.
+        '403':
+          description: Usuário não tem permissão.
+
+    get:
+      tags:
+        - Gerenciamento de Cotas (Admin)
+      summary: Listar Registros de Cotas
+      description: Retorna uma lista paginada de todos os registros de cotas que foram adicionados ao sistema.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número da página a ser retornada.
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Número de itens por página.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+      responses:
+        '200':
+          description: Lista de cotas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CotaItem'
+        '401':
+          description: Token de autenticação ausente ou inválido.
+        '403':
+          description: Usuário não tem permissão.
+
+  /admin/cotas/{id}:
+    delete:
+      tags:
+        - Gerenciamento de Cotas (Admin)
+      summary: Deletar Registro de Cota
+      description: >
+        Permite a um administrador remover um registro de cota existente.
+        Isso recalcula o progresso do termômetro.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: O ID único da cota a ser deletada.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Cota deletada com sucesso (No Content).
+        '401':
+          description: Token de autenticação ausente ou inválido.
+        '403':
+          description: Usuário não tem permissão.
+        '404':
+          description: Cota com o ID especificado não encontrada.
+
+  /admin/meta:
+    put:
+      tags:
+        - Gerenciamento da Meta (Admin)
+      summary: Atualizar Meta de Arrecadação
+      description: >
+        Permite a um administrador alterar o valor total da meta de arrecadação e/ou
+        o valor unitário padrão da cota.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                novaMetaValor:
+                  type: number
+                  format: float
+                  description: O novo valor total da meta em R$.
+                  example: 1500000.00
+                novoValorPorCotaPadrao:
+                  type: number
+                  format: float
+                  description: O novo valor unitário padrão de cada cota. Pode impactar cálculos futuros.
+                  example: 250.00
+              minProperties: 1
+      responses:
+        '200':
+          description: Meta atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermometroStatus'
+        '400':
+          description: Dados inválidos.
+        '401':
+          description: Token de autenticação ausente ou inválido.
+        '403':
+          description: Usuário não tem permissão.
+
+  /admin/reset:
+    post:
+      tags:
+        - Gerenciamento da Meta (Admin)
+      summary: Reiniciar Termômetro
+      description: >
+        Zera todas as cotas e o valor arrecadado, resetando o progresso do termômetro.
+        Opcionalmente, pode resetar a meta também.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resetMetaTambem:
+                  type: boolean
+                  description: Se verdadeiro, a meta também será resetada para um valor padrão.
+                  default: false
+      responses:
+        '200':
+          description: Termômetro reiniciado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermometroStatus'
+        '401':
+          description: Token de autenticação ausente ou inválido.
+        '403':
+          description: Usuário não tem permissão.
+
+components:
+  schemas:
+    TermometroStatus:
+      type: object
+      properties:
+        cotasArrecadadas:
+          type: integer
+          description: Número de cotas já arrecadadas.
+          example: 1500
+        cotasTotal:
+          type: integer
+          description: Número total de cotas para atingir a meta.
+          example: 6000
+        valorArrecadado:
+          type: number
+          format: float
+          description: Valor total em R$ já arrecadado.
+          example: 300000.00
+        metaValor:
+          type: number
+          format: float
+          description: Valor total em R$ da meta.
+          example: 1200000.00
+        porcentagemAlcancada:
+          type: number
+          format: float
+          description: Porcentagem da meta total já alcançada (0.00 a 100.00).
+          example: 25.00
+        ultimaAtualizacao:
+          type: string
+          format: date-time
+          description: Timestamp da última atualização do status.
+          example: "2025-07-05T18:30:00Z"
+      required:
+        - cotasArrecadadas
+        - cotasTotal
+        - valorArrecadado
+        - metaValor
+        - porcentagemAlcancada
+        - ultimaAtualizacao
+
+    CotaItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID único da cota.
+          readOnly: true
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        quantidadeCotas:
+          type: integer
+          description: Número de cotas adicionadas neste item.
+          example: 1
+        valorPorCota:
+          type: number
+          format: float
+          description: Valor unitário da cota em R$.
+          example: 200.00
+        descricao:
+          type: string
+          description: Breve descrição ou identificação da origem da cota.
+          nullable: true
+          example: "Arrecadação evento Y"
+        dataRegistro:
+          type: string
+          format: date-time
+          description: Data e hora do registro da cota.
+          readOnly: true
+          example: "2025-07-05T18:00:00Z"
+        registradoPor:
+          type: string
+          description: Nome ou ID do usuário administrador que registrou a cota.
+          nullable: true
+          readOnly: true
+          example: "Admin João"
+      required:
+        - quantidadeCotas
+        - valorPorCota
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Nome de usuário do administrador.
+          example: "admin"
+        password:
+          type: string
+          description: Senha do administrador.
+          example: "senhaSegura123"
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT para autenticação em requisições futuras.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+x-webSockets:
+  /ws:
+    description: Conexão WebSocket para receber atualizações em tempo real do status do termômetro.
+    publish:
+      termometroAtualizado:
+        summary: Atualização do Status do Termômetro
+        description: > 
+          Emitido pelo servidor sempre que o status do termômetro de arrecadação é atualizado (ex: nova cota adicionada, meta alterada).
+        message:
+          name: termometroAtualizado
+          payload:
+            $ref: '#/components/schemas/TermometroStatus'
