@@ -165,3 +165,130 @@ A API segue o padrão OpenAPI 3.0 e está dividida em quatro grupos principais d
 
 ## 🔒 Autenticação
 Endpoints administrativos requerem autenticação via Bearer Token (JWT) no header:
+
+## Implementação do Server.ts
+
+### Descrição
+
+Servidor Node.js desenvolvido com Fastify que oferece:
+
+1. **Sistema completo de autenticação** (registro, login, JWT)
+2. **Gerenciamento de temporizadores** com persistência em banco de dados
+3. **Comunicação em tempo real** via WebSocket usando Socket.IO
+4. **Arquitetura robusta** com middlewares de segurança e validações
+
+### Configuração Inicial
+
+#### Pré-requisitos
+
+- Node.js (versão 18 ou superior)
+- PostgreSQL
+- npm ou yarn
+
+#### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com:
+
+```env
+PORT=3001
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+JWT_SECRET=sua_chave_secreta_aqui
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/nome_do_banco?schema=public"
+```
+
+### Estrutura do Código
+
+O servidor está organizado em:
+
+1. **Configuração do Fastify**
+   - Plugins de segurança (helmet, CORS, rate limiting)
+   - Sistema de logging
+   - Manipuladores de erro
+
+2. **Autenticação**
+   - `/api/auth/register` - Registro de usuários
+   - `/api/auth/login` - Login com JWT
+   - Middleware de autenticação
+
+3. **Temporizadores**
+   - CRUD de temporizadores
+   - Estado em memória para temporizadores ativos
+   - Sincronização via WebSocket
+
+4. **WebSocket**
+   - Autenticação de conexões
+   - Eventos para controle dos temporizadores
+   - Broadcast de atualizações
+
+### Como Executar
+
+1. Instale as dependências:
+```bash
+npm install
+```
+
+2. Execute as migrações do banco de dados:
+```bash
+npx prisma migrate dev
+```
+
+3. Inicie o servidor:
+```bash
+npm run dev
+```
+
+### Rotas Principais
+
+#### Autenticação
+
+| Método | Rota                | Descrição                          |
+|--------|---------------------|------------------------------------|
+| POST   | /api/auth/register  | Registrar novo usuário             |
+| POST   | /api/auth/login     | Login e obtenção de token JWT      |
+| GET    | /api/auth/profile   | Obter informações do usuário (JWT) |
+
+#### Temporizadores
+
+| Método | Rota         | Descrição                          |
+|--------|--------------|------------------------------------|
+| GET    | /api/timers  | Listar temporizadores do usuário   |
+| POST   | /api/timers  | Criar novo temporizador            |
+
+#### WebSocket
+
+Eventos disponíveis:
+
+- `timer:start` - Inicia um temporizador
+- `timer:pause` - Pausa um temporizador
+- `timer:stop` - Para um temporizador
+
+### Modelo de Dados
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  password?: string;
+  name?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ActiveTimer {
+  id: string;
+  name: string;
+  duration: number;
+  currentTime: number;
+  isActive: boolean;
+  startTime?: Date;
+  intervalId?: NodeJS.Timeout;
+}
+```
+
+### Considerações de Segurança
+
+- Todas as rotas de temporizadores exigem autenticação JWT
+- Senhas são armazenadas com hash bcrypt
+- CORS configurado para aceitar apenas o domínio do frontend
+- Rate limiting para prevenir abuso da API
