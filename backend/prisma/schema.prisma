@@ -14,9 +14,13 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String   // Campo para armazenar hash da senha
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Relação com timers
+  timers    Timer[]
 
   @@map("users")
 }
@@ -27,9 +31,12 @@ model Timer {
   duration    Int      // em segundos
   isActive    Boolean  @default(false)
   currentTime Int      @default(0)
-  createdBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Relação com usuário
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("timers")
 } 
