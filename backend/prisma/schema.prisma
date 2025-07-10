@@ -21,6 +21,7 @@ model User {
   
   // Relação com timers
   timers    Timer[]
+  cotas    Cota[]
 
   @@map("users")
 }
@@ -39,4 +40,18 @@ model Timer {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("timers")
-} 
+}
+
+model Cota {
+  id                   String   @id @default(cuid())
+  valor               Decimal  @db.Decimal(10, 2)
+  dadosCriptografados String   @db.Text
+  userId              String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relacionamento com usuário
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("cotas")
+}

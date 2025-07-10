@@ -7,6 +7,9 @@ import bcrypt from 'bcryptjs';
 import { Server as SocketIOServer } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { request } from 'http';
+//IMPORTAÇÕES PARA CRIPTOGRAFIA
+import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
+import { promisify } from 'util';
 
 // Augment FastifyInstance to include jwt
 declare module 'fastify' {
@@ -20,6 +23,7 @@ const PORT = Number(process.env.PORT) || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use uma variável de ambiente segura em produção
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your_encryption_key'; // NOVA VARIAVEL PARA CRIPTOGRAFIA
 
 // Inicialização do Prisma
 const prisma = new PrismaClient();
@@ -77,6 +81,94 @@ interface TimerResponse {
     updatedAt: Date;
   }[];
 }
+
+// NOVA INTERFACE PARA COTAS
+interface CotaRequest {
+  Body: {
+    name?: string;
+    cpf?: string;
+    comprovante?: string; //Base64 ou URL do arquivo
+    valor?: number;
+    observacoes?: string;
+  }
+}
+
+// ========== SERVIÇO DE CRIPTOGRAFIA ==========
+const scryptAsync = promisify(scrypt);
+
+class EncryptionService {
+  private readonly algorithm = 'aes-256-ctr';
+  private readonly keyLength = 32;
+  private readonly ivLength = 16;
+
+  private async getKey(password: string, salt: Buffer): Promise<Buffer> {
+    return (await scryptAsync(password, salt, this.keyLength)) as Buffer;
+  }
+
+  async encrypt(text: string, password: string): Promise<string> {
+    const salt = randomBytes(16);
+    const iv = randomBytes(this.ivLength);
+    const key = await this.getKey(password, salt);
+
+    const cipher = createCipheriv(this.algorithm, key, iv);
+    const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+
+    // Retorna: salt + iv + encrypted
+      return salt.toString('base64') + ':' + iv.toString('base64') + ':' + encrypted.toString('base64');
+  }
+
+  async decrypt(encryptedData: string, password: string): Promise<string> {
+    const [saltBase64, ivBase64, encryptedBase64] = encryptedData.split(':');
+    
+    if (!saltBase64) {
+      throw new Error('Salt ausente nos dados criptografados');
+    }
+    if (!ivBase64) {
+      throw new Error('IV ausente nos dados criptografados');
+    }
+    if (!encryptedBase64) {
+      throw new Error('Dados criptografados ausentes');
+    }
+    const salt = Buffer.from(saltBase64, 'base64');
+    const iv = Buffer.from(ivBase64, 'base64');
+    const encrypted = Buffer.from(encryptedBase64, 'base64');
+
+    const key = await this.getKey(password, salt);
+    const decipher = createDecipheriv(this.algorithm, key, iv);
+    
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    return decrypted.toString('utf8');
+  }
+}
+
+// Instancia do serviço de criptografia
+const encryptionService = new EncryptionService();
+
+// Função para criptografar dados sensiveis
+async function encryptSensitiveData(data: any): Promise<any> {
+  if (!data) return data;
+
+  try {
+    return await encryptionService.encrypt(JSON.stringify(data), ENCRYPTION_KEY);
+  } catch (error) {
+    console.error('Erro ao criptografar dados sensiveis:', error);
+    throw new Error('Erro ao criptografar dados sensiveis');
+  }
+}
+
+// Função para descriptografator dados sensiveis
+async function decryptSensitiveData(encryptedData: string): Promise<any> {
+  if (!encryptedData) return null;
+
+  try {
+    const decrypted = await encryptionService.decrypt(encryptedData, ENCRYPTION_KEY);
+    return JSON.parse(decrypted);
+  } catch (error) {
+    console.error('Erro ao descriptografar dados sensiveis:', error);
+    return null;
+  }
+}
+
 
 // Estado global dos timers (em produção, usar Redis)
 const activeTimers = new Map<string, ActiveTimer>();
@@ -160,6 +252,7 @@ const start = async () => {
 
     // Decorar o Fastify com o método de autenticação
     fastify.decorate('authenticate', authenticate);
+
 
     // ========== ROTAS DE AUTENTICAÇÃO ==========
     // Rota de registro
@@ -355,6 +448,253 @@ const start = async () => {
         reply.send({ timer });
       } catch (error) {
         fastify.log.error('Erro ao criar timer:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    });
+
+    // ========== ROTAS DE COTAS (PROTEGIDAS) - NOVAS ROTAS ==========
+    // Rota para criar uma nova cota
+    fastify.post<CotaRequest>('/api/cotas', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+        const { name, cpf, comprovante, valor, observacoes } = request.body;
+
+        //validações
+        if (!valor || valor <= 0) {
+          return reply.code(400).send({ error: 'Valor da cota é obrigatorio e deve ser maior que zero' });
+        }
+
+        // Validar CPF se fornecido (regex básico)
+        if (cpf && !/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf) && !/^\d{11}$/.test(cpf)) {
+          return reply.code(400).send({ error: 'CPF deve estar no formato 000.000.000-00 ou conter apenas números' });
+        }
+
+        //preparar dados para criptografia
+        const dadosSensiveis = {
+          nome: name || null,
+          cpf: cpf || null,
+          comprovante: comprovante || null,
+          observacoes: observacoes || null
+        };
+
+        // Criptografar dados sensiveis
+        const dadosCriptografados = await encryptSensitiveData(dadosSensiveis);
+
+        // Criar a cota no banco
+        const cota = await prisma.cota.create({
+          data: {
+            valor,
+            dadosCriptografados,
+            userId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        });
+        reply.code(201).send({
+          message: 'Cota criada com sucesso',
+          cota: {
+            id: cota.id,
+            valor: cota.valor,
+            nome: name || null,
+            cpf: cpf ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '***.***.***-**') : null, // mascarar CPF na resposta
+            temComprovante: !!comprovante,
+            createdAt: cota.createdAt,
+            updatedAt: cota.updatedAt
+          }
+        });
+        
+      } catch (error) {
+        fastify.log.error('Erro ao criar cota:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    });
+
+    // Rota para obter todas as cotas do usuário
+    fastify.get('/api/cotas', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+
+        const cotas = await prisma.cota.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            valor: true,
+            dadosCriptografados: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        });
+
+        // Descriptografar dados para exibição (com mascaramento)
+        const cotasDescriptografadas = await Promise.all(
+          cotas.map(async (cota) => {
+            const dadosDescriptografados = await decryptSensitiveData(cota.dadosCriptografados);
+            
+            return {
+              id: cota.id,
+              valor: cota.valor,
+              nome: dadosDescriptografados?.nome || null,
+              cpf: dadosDescriptografados?.cpf ? 
+                dadosDescriptografados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '***.***.***-**') : null,
+              temComprovante: !!dadosDescriptografados?.comprovante,
+              observacoes: dadosDescriptografados?.observacoes || null,
+              createdAt: cota.createdAt,
+              updatedAt: cota.updatedAt
+            };
+          })
+        );
+
+        reply.send({ cotas: cotasDescriptografadas });
+
+      } catch (error) {
+        fastify.log.error('Erro ao obter cotas:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    });
+
+    // Rota para obter uma cota especifica
+    fastify.get<{ Params: { id: string } }>('/api/cotas/:id', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+        const { id } = request.params;
+
+        const cota = await prisma.cota.findFirst({
+          where : {
+            id,
+            userId
+          }
+        });
+
+        if (!cota) {
+          return reply.code(404).send({ error: 'Cota não encontrada' });
+        }
+
+        // Descriptografar dados
+        const dadosDescriptografados = await decryptSensitiveData(cota.dadosCriptografados);
+
+         reply.send({
+          cota: {
+            id: cota.id,
+            valor: cota.valor,
+            nome: dadosDescriptografados?.nome || null,
+            cpf: dadosDescriptografados?.cpf || null,
+            comprovante: dadosDescriptografados?.comprovante || null,
+            observacoes: dadosDescriptografados?.observacoes || null,
+            createdAt: cota.createdAt,
+            updatedAt: cota.updatedAt
+          }
+        });
+      } catch (error) {
+        fastify.log.error('Erro ao obter cota:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    })
+
+    // Rota para relatorios (apenas para admins)
+    fastify.get('/api/cotas/relatorio', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+
+        // Verificar se é admin (você pode implementar uma verificação mais robusta)
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true }
+        });
+
+        // Exemplo: apenas emails específicos podem gerar relatórios
+        const admins = ['admin@igreja.com', 'pastor@igreja.com', 'presbitero@igreja.com'];
+        if (!user || !admins.includes(user.email)) {
+          return reply.code(403).send({ error: 'Acesso negado' });
+        }
+
+        const cotas = await prisma.cota.findMany({
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: {
+                email : true,
+                name: true
+              }
+            }
+          }
+        });
+
+        // Descriptografar dados para o relatório
+        const cotasRelatorio = await Promise.all(
+          cotas.map(async (cota) => {
+            const dadosDescriptografados = await decryptSensitiveData(cota.dadosCriptografados);
+
+            return {
+              id: cota.id,
+              valor: cota.valor,
+              nome: dadosDescriptografados?.nome || 'Anônimo',
+              cpf: dadosDescriptografados?.cpf || null,
+              observacoes: dadosDescriptografados?.observacoes || null,
+              temComprovante: !!dadosDescriptografados?.comprovante,
+              usuario: cota.user.name || cota.user.email,
+              createdAt: cota.createdAt,
+              updatedAt: cota.updatedAt
+            };
+          })
+        );
+
+        // Calcular estatísticas
+        const totalArrecadado = cotasRelatorio.reduce((sum, cota) => sum + Number(cota.valor), 0);
+        const totalCotas = cotasRelatorio.length;
+        const cotasComComprovante = cotasRelatorio.filter(cota => cota.temComprovante).length;
+
+        reply.send({
+          estatisticas: {
+            totalArrecadado,
+            totalCotas,
+            cotasComComprovante,
+            percentualComprovantes: totalCotas > 0 ? (cotasComComprovante / totalCotas) * 100 : 0
+          },
+          cotas: cotasRelatorio
+        });
+
+      } catch (error) {
+        fastify.log.error('Erro ao gerar relatório:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    });
+
+    // Rota para deletar uma cota
+    fastify.delete<{ Params: { id: string } }>('/api/cotas/:id', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+        const { id } = request.params;
+
+        const cota = await prisma.cota.findFirst({
+          where: {
+            id,
+            userId
+          }
+        });
+
+        if (!cota) {
+          return reply.code(404).send({ error: 'Cota não encontrada' });
+        }
+
+        await prisma.cota.delete({
+          where : { id }
+        });
+
+        reply.send({ message: 'Cota excluida com sucesso' });
+
+      } catch (error) {
+        fastify.log.error('Erro ao deletar cota:', error);
         reply.code(500).send({ error: 'Erro interno do servidor' });
       }
     });
@@ -578,6 +918,7 @@ const start = async () => {
     console.log(`🌐 Ambiente: ${NODE_ENV}`);
     console.log(`🔗 WebSocket disponível em ws://localhost:${PORT}`);
     console.log(`🔐 Autenticação JWT ativa`)
+    console.log(`💰 Rotas de cotas disponíveis`);
 
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);
