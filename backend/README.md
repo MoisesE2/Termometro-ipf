@@ -108,6 +108,8 @@ backend/
 │   └── server.ts          # Servidor principal
 ├── prisma/
 │   └── schema.prisma      # Schema do banco
+├── api_termometro.yaml    # API
+├── .gitignore
 ├── package.json
 ├── tsconfig.json
 ├── .env.example
@@ -255,6 +257,14 @@ npm run dev
 | GET    | /api/timers  | Listar temporizadores do usuário   |
 | POST   | /api/timers  | Criar novo temporizador            |
 
+#### Cotas (com Criptografia)
+| Método  | Rota             | Descrição                          |
+|---------|------------------|------------------------------------|
+| POST    | /api/cotas       | Criar nova cota com dados cripto   |
+| GET     | /api/cotas       | Listar cotas do usuário            |
+| GET     | /api/cotas/:id   | Detalhes de uma cota específica    |
+
+
 #### WebSocket
 
 Eventos disponíveis:
@@ -269,10 +279,15 @@ Eventos disponíveis:
 interface User {
   id: string;
   email: string;
-  password?: string;
+  password?: string;  // Agora é opcional
   name?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface JWTPayload {
+  userId: string;
+  email: string;
 }
 
 interface ActiveTimer {
@@ -284,11 +299,74 @@ interface ActiveTimer {
   startTime?: Date;
   intervalId?: NodeJS.Timeout;
 }
+
+interface AuthRequest {
+  Body: {
+    email: string;
+    password: string;
+    name?: string;
+  }
+}
+
+interface TimerRequest {
+  Body: {
+    name: string;
+    duration: number;
+  }
+}
+
+interface TimerResponse {
+  timers: {
+    id: string;
+    name: string;
+    duration: number;
+    currentTime: number;
+    isActive: boolean;
+    userId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
+
+interface CotaRequest {
+  Body: {
+    name?: string;
+    cpf?: string;
+    comprovante?: string; 
+    valor?: number;
+    observacoes?: string;
+  }
+}
 ```
 
-### Considerações de Segurança
+🔒 Considerações de Segurança
 
-- Todas as rotas de temporizadores exigem autenticação JWT
-- Senhas são armazenadas com hash bcrypt
-- CORS configurado para aceitar apenas o domínio do frontend
-- Rate limiting para prevenir abuso da API
+    Criptografia:
+
+        Dados sensíveis sempre criptografados antes do armazenamento
+
+        Chaves de criptografia armazenadas em variáveis de ambiente
+
+        Implementação AES-256 com salt e IV únicos
+
+    Autenticação:
+
+        JWT com tempo de expiração
+
+        Proteção contra ataques CSRF
+
+        Senhas armazenadas como hash bcrypt
+
+    API:
+
+        CORS restrito ao domínio do frontend
+
+        Rate limiting para prevenir abuso
+
+        Validação de entrada em todas as rotas
+
+    WebSocket:
+
+        Autenticação obrigatória para conexões
+
+        Validação de eventos do cliente
