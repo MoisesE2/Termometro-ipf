@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = () => {
             // Se logado como admin
             <div className="flex items-center space-x-4">
               <Link
-                href="auth/admin/dashboard"
+                href="/admin/dashboard"
                 className="text-gray-800 hover:text-teal-500 transition-colors duration-200 text-base sm:text-lg font-medium"
               >
                 Painel de Cotas
