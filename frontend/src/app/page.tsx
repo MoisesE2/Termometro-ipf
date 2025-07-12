@@ -8,7 +8,7 @@ import { Meta } from '@/models/Meta';
 
 export default function Home() {
   // Mock de cotas
-  const cotasMock: Cota[] = Array.from({ length: 15  }, (_, i) => ({
+  const cotasMock: Cota[] = Array.from({ length: 30  }, (_, i) => ({
     id: i + 1,
     valor: 200,
     descricao: `Cota ${i + 1}`,
@@ -42,18 +42,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 relative">
-      {/* Ícone de coração no canto superior direito */}
-      <div className="absolute top-8 right-8 z-10">
-        <div className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-200 hover:shadow-lg transition-shadow">
-          <FaHeart className="text-teal-500 text-xl" />
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
-            Termômetro de Arrecadação
+            Medidor de Arrecadação
           </h1>
           <p className="text-2xl text-teal-600 italic mb-6">
             &ldquo;Alargando Fronteiras&rdquo;
@@ -89,7 +82,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-10">
                 <StatsCard
                   icon={<FaUsers className="text-4xl" />}
-                  title="Cotas Alargadas"
+                  title="Cotas Adquiridas"
                   value={`${meta.cotasArrecadadas.toLocaleString()} / ${meta.cotasTotal.toLocaleString()}`}
                 />
 
