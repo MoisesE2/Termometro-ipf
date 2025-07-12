@@ -1,5 +1,5 @@
 'use client';
-import { FeatureBanner } from "@/components/FeatureBanner";
+import { FeatureBanner } from "@/components/ui/FeatureBanner";
 import { useRouter } from "next/navigation";
 import { FaChartLine, FaCogs, FaTasks } from "react-icons/fa";
 
