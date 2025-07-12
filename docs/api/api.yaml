@@ -157,8 +157,99 @@ paths:
           description: Token de autenticação ausente ou inválido.
         '403':
           description: Usuário não tem permissão.
-
   /admin/cotas/{id}:
+    put:
+      tags:
+        - Gerenciamento de Cotas (Admin)
+      summary: Atualizar Registro de Cota
+      description: >
+        Permite a um administrador atualizar os valores ou a descrição de uma cota existente.
+        Isso recalcula o progresso do termômetro automaticamente.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: O ID único da cota a ser atualizada.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantidadeCotas:
+                  type: integer
+                  description: >
+                    Novo número de cotas (ex: 2 cotas).
+                  example: 2
+                valorPorCota:
+                  type: number
+                  format: float
+                  description: > 
+                    Novo valor unitário de cada cota (ex: 300.00).
+                  example: 300.00
+                descricao:
+                  type: string
+                  description: Nova descrição ou identificação da cota.
+                  nullable: true
+                  example: "Doação ajustada para o evento Z"
+              minProperties: 1
+              additionalProperties: false
+      responses:
+        '200':
+          description: Registro de cota atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CotaItem'
+        '400':
+          description: Dados inválidos na requisição.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Os dados fornecidos são inválidos."
+        '401':
+          description: Token de autenticação ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token inválido ou ausente."
+        '403':
+          description: Usuário não tem permissão.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Acesso não autorizado."
+        '404':
+          description: Cota com o ID especificado não encontrada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cota não encontrada."
+        '500':
+          description: Erro interno do servidor.
+
     delete:
       tags:
         - Gerenciamento de Cotas (Admin)
