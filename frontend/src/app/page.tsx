@@ -8,7 +8,7 @@ import { Meta } from '@/models/Meta';
 
 export default function Home() {
   // Mock de cotas
-  const cotasMock: Cota[] = Array.from({ length: 60  }, (_, i) => ({
+  const cotasMock: Cota[] = Array.from({ length: 15  }, (_, i) => ({
     id: i + 1,
     valor: 200,
     descricao: `Cota ${i + 1}`,
