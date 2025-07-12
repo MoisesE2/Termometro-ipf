@@ -13,4 +13,6 @@ coverage
 .DS_Store
 .next
 dist
-*.log 
+*.log
+backend/node_modules
+frontend/node_modules 

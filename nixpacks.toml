@@ -5,14 +5,14 @@ nixPkgs = ["nodejs_18", "npm-9_x"]
 cmds = [
   "npm ci",
   "cd backend && npm ci",
-  "cd ../frontend && npm ci"
+  "cd frontend && npm ci"
 ]
 
 [phases.build]
 cmds = [
   "cd backend && npm run build",
-  "cd ../frontend && npm run build"
+  "cd frontend && npm run build"
 ]
 
 [start]
-cmd = "npm run start" 
+cmd = "chmod +x start-production.sh && bash start-production.sh" 

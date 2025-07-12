@@ -12,10 +12,10 @@ if [ "$NODE_ENV" = "production" ]; then
     
     # Iniciar aplicações
     echo "🌐 Iniciando aplicações..."
-    npm run start
+    concurrently "cd backend && npm start" "cd frontend && npm start"
 else
     echo "🔧 Modo desenvolvimento detectado"
     
     # Iniciar em modo desenvolvimento
-    npm run dev
+    concurrently "cd backend && npm run dev" "cd frontend && npm run dev"
 fi 
