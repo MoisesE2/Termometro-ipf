@@ -1,5 +1,6 @@
 import { Cota } from "@/models/Cota";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Props {
   initialData: Cota | null;
@@ -28,10 +29,10 @@ export default function CotaForm({ initialData, onCancel, onSubmit }: Props) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setForm((prev) => ({ ...prev, imagem: file }));
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0] || null;
+  //   setForm((prev) => ({ ...prev, imagem: file }));
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,19 +122,23 @@ export default function CotaForm({ initialData, onCancel, onSubmit }: Props) {
 
   {/* Pré-visualização da imagem */}
   {form.imagem && typeof form.imagem !== "string" && (
-    <img
+    <Image
       src={URL.createObjectURL(form.imagem)}
       alt="Pré-visualização"
-      className="w-40 mt-2 rounded-md shadow"
+      width={160}
+      height={120}
+      className="w-40 mt-2 rounded-md shadow object-cover"
     />
   )}
 
   {/* Caso imagem seja uma URL string (exemplo: imagem já salva no backend) */}
   {form.imagem && typeof form.imagem === "string" && (
-    <img
+    <Image
       src={form.imagem}
       alt="Imagem atual"
-      className="w-40 mt-2 rounded-md shadow"
+      width={160}
+      height={120}
+      className="w-40 mt-2 rounded-md shadow object-cover"
     />
   )}
 </div>

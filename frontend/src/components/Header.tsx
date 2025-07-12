@@ -15,8 +15,8 @@ import IPFLogo from "../app/assets/IPF.png";
 
 interface HeaderProps {
   // Para controlar o estado de login externamente (via props ou Context API)
-  // isLoggedIn?: boolean;
-  // onLogout?: () => void;
+  isLoggedIn?: boolean;
+  onLogout?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = () => {
@@ -25,10 +25,10 @@ const Header: React.FC<HeaderProps> = () => {
   const [isLoggedIn, setIsLoggedIn] = React.useState(true); // Mude para true para testar o visual de "Painel Admin"
 
   // Exemplo de como lidaria com cliques em um cenário real
-  const handleLoginClick = () => {
-    console.log("Simulando navegação para /admin/login");
-    // Para navegação real: useRouter().push('/admin/login');
-  };
+  // const handleLoginClick = () => {
+  //   console.log("Simulando navegação para /admin/login");
+  //   // Para navegação real: useRouter().push('/admin/login');
+  // };
 
   const handleLogoutClick = () => {
     console.log("Simulando Logout e navegação para /");

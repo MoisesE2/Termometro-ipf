@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Cota } from "@/models/Cota";
+import Image from "next/image";
 
 export default function RegistrarCotaPage() {
   const router = useRouter();
@@ -127,10 +128,12 @@ export default function RegistrarCotaPage() {
           />
 
           {form.imagem && (
-            <img
+            <Image
               src={URL.createObjectURL(form.imagem)}
               alt="Pré-visualização"
-              className="w-40 mt-2 rounded-md shadow"
+              width={160}
+              height={120}
+              className="w-40 mt-2 rounded-md shadow object-cover"
             />
           )}
         </div>
