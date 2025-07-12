@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: termometro-postgres
+    environment:
+      POSTGRES_DB: termometro_db
+      POSTGRES_USER: termometro_user
+      POSTGRES_PASSWORD: termometro_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - termometro-network
+
+  # Backend
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: termometro-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://termometro_user:termometro_pass@postgres:5432/termometro_db
+      - JWT_SECRET=sua_chave_jwt_super_secreta_aqui
+      - ENCRYPTION_KEY=sua_chave_de_criptografia_aqui
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - termometro-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+        npx prisma migrate deploy &&
+        npx prisma generate &&
+        npm start
+      "
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: termometro-frontend
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - termometro-network
+
+volumes:
+  postgres_data:
+
+networks:
+  termometro-network:
+    driver: bridge 

@@ -253,6 +253,25 @@ const start = async () => {
     // Decorar o Fastify com o método de autenticação
     fastify.decorate('authenticate', authenticate);
 
+    // Rota de health check para Railway
+    fastify.get('/api/health', async (request, reply) => {
+      try {
+        // Verificar conexão com banco
+        await prisma.$queryRaw`SELECT 1`;
+        reply.send({ 
+          status: 'healthy', 
+          timestamp: new Date().toISOString(),
+          database: 'connected'
+        });
+      } catch (error) {
+        fastify.log.error('Health check failed:', error);
+        reply.code(503).send({ 
+          status: 'unhealthy', 
+          timestamp: new Date().toISOString(),
+          database: 'disconnected'
+        });
+      }
+    });
 
     // ========== ROTAS DE AUTENTICAÇÃO ==========
     // Rota de registro
