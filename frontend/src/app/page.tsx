@@ -86,7 +86,7 @@ export default function Home() {
                 Uma cota de {formatCurrency(200)} por um grande objetivo!
               </p>
 
-              <div className="grid grid-cols-2 gap-8 mb-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-10">
                 <StatsCard
                   icon={<FaUsers className="text-4xl" />}
                   title="Cotas Alargadas"
