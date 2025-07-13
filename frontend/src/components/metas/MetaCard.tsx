@@ -28,7 +28,7 @@ export default function MetaCard({ meta }: { meta: Meta }) {
       </div>
 
       <p className="mt-6 text-sm text-gray-500 text-right italic">
-        Última atualização: {new Date(meta.ultimaAtualizacao).toLocaleString("pt-BR")}
+        Última atualização: {meta.ultimaAtualizacao ? new Date(meta.ultimaAtualizacao).toLocaleString("pt-BR") : 'Não disponível'}
       </p>
     </section>
   );
