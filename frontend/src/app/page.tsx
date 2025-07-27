@@ -11,7 +11,7 @@ export default function Home() {
   const [showQRCode, setShowQRCode] = useState(false);
 
   // Mock de cotas
-  const cotasMock: Cota[] = Array.from({ length: 30  }, (_, i) => ({
+  const cotasMock: Cota[] = Array.from({ length: 87 }, (_, i) => ({
     id: i + 1,
     valor: 200,
     descricao: `Cota ${i + 1}`,
@@ -68,10 +68,10 @@ export default function Home() {
               priority
             />
             <div className="text-center">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-wide bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 bg-clip-text text-transparent mb-2 lg:mb-3 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-wide bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 bg-clip-text text-transparent mb-2 lg:mb-3 leading-tight">
                 Medidor de Arrecadação
               </h1>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-teal-600 font-medium italic">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-teal-600 font-medium italic">
                 &ldquo;Alargando Fronteiras&rdquo;
               </p>
             </div>
@@ -83,8 +83,8 @@ export default function Home() {
           {/* Termômetro */}
           <div className="flex-1 bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-6 lg:p-10 border border-white/40 w-full max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-6 items-center min-h-0">
             <div className="text-center mb-2 md:mb-2">
-              <h3 className="text-base lg:text-lg font-bold tracking-wide text-slate-800 mb-1">Barra de Progresso</h3>
-              <p className="text-xs text-gray-700">Meta de arrecadação</p>
+                              <h3 className="text-lg lg:text-xl font-bold tracking-wide text-slate-800 mb-1">Barra de Progresso</h3>
+                              <p className="text-xl text-gray-700">Meta de arrecadação</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Thermometer percentage={meta.porcentagemAlcancada} animated={true} />
@@ -94,62 +94,62 @@ export default function Home() {
           {/* Estatísticas */}
           <div className="flex-[2.3] bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-6 lg:p-10 border border-white/40 w-full lg:max-w-2xl max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-6 items-center min-h-[320px]">
             <div className="text-center mb-3">
-              <h2 className="text-base md:text-lg lg:text-2xl font-bold tracking-wide text-slate-800 mb-1">
-                Estatísticas
-              </h2>
+                              <h2 className="text-lg md:text-xl lg:text-3xl font-bold tracking-wide text-slate-800 mb-1">
+                  Estatísticas
+                </h2>
               <div className="w-12 h-0.5 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mx-auto mb-2"></div>
-              <p className="text-xs text-slate-600 leading-relaxed px-1">
-                Cada cota de {formatCurrency(200)} nos aproxima do objetivo!
-              </p>
+                              <p className="text-xl text-slate-600 leading-relaxed px-1">
+                  Cada cota de {formatCurrency(200)} nos aproximar do objetivo!
+                </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 flex-grow">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
-                <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
-                  <FaUsers className="text-xs md:text-sm text-white" />
-                </div>
-                <h3 className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
-                  Cotas
-                </h3>
-                <p className="text-sm md:text-base font-bold text-slate-800 text-center break-words">
-                  {meta.cotasArrecadadas} / {meta.cotasTotal.toLocaleString()}
-                </p>
+                                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
+                  <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
+                    <FaUsers className="text-xs md:text-sm text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
+                    Cotas
+                  </h3>
+                  <p className="text-lg md:text-xl font-bold text-slate-800 text-center break-words">
+                    {meta.cotasArrecadadas} / {meta.cotasTotal.toLocaleString()}
+                  </p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
-                <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
-                  <FaDollarSign className="text-xs md:text-sm text-white" />
-                </div>
-                <h3 className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
-                  Arrecadado
-                </h3>
-                <p className="text-sm md:text-base font-bold text-slate-800 text-center break-words">
-                  {formatCurrency(meta.valorArrecadado)}
-                </p>
+                                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
+                  <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
+                    <FaDollarSign className="text-xs md:text-sm text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
+                    Arrecadado
+                  </h3>
+                  <p className="text-lg md:text-xl font-bold text-slate-800 text-center break-words">
+                    {formatCurrency(meta.valorArrecadado)}
+                  </p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
-                <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
-                  <FaBullseye className="text-xs md:text-sm text-white" />
-                </div>
-                <h3 className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
-                  Meta
-                </h3>
-                <p className="text-sm md:text-base font-bold text-slate-800 text-center break-words">
-                  {formatCurrency(meta.metaValor)}
-                </p>
+                                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
+                  <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
+                    <FaBullseye className="text-xs md:text-sm text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
+                    Meta
+                  </h3>
+                  <p className="text-lg md:text-xl font-bold text-slate-800 text-center whitespace-nowrap">
+                    {formatCurrency(meta.metaValor)}
+                  </p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
-                <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
-                  <FaChartLine className="text-xs md:text-sm text-white" />
-                </div>
-                <h3 className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
-                  Progresso
-                </h3>
-                <p className="text-sm md:text-base font-bold text-slate-800 text-center break-words">
-                  {meta.porcentagemAlcancada.toFixed(2)}%
-                </p>
+                                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 md:p-5 border border-emerald-100/50 hover:shadow-md transition-all duration-300 flex flex-col justify-center">
+                  <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 mx-auto">
+                    <FaChartLine className="text-xs md:text-sm text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold text-slate-600 uppercase tracking-wide text-center mb-1">
+                    Progresso
+                  </h3>
+                  <p className="text-lg md:text-xl font-bold text-slate-800 text-center break-words">
+                    {meta.porcentagemAlcancada.toFixed(1)}%
+                  </p>
               </div>
             </div>
           </div>
@@ -160,26 +160,26 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 drop-shadow">
                 <FaQrcode className="text-xs md:text-sm text-white" />
               </div>
-              <h2 className="text-base font-bold text-slate-800 mb-1">
-                PIX
-              </h2>
+                              <h2 className="text-lg font-bold text-slate-800 mb-1">
+                  PIX
+                </h2>
               <div className="w-12 h-0.5 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mx-auto mb-2"></div>
-              <p className="text-xs text-slate-600 leading-relaxed px-1">
-                Contribua de forma rápida!
-              </p>
+                              <p className="text-2xl text-slate-600 leading-relaxed px-1">
+                  Contribua de forma rápida!
+                </p>
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-2 md:p-3 border border-green-200/50 mb-2">
                 <div className="bg-white rounded-md p-2 border border-green-200/50 mb-2 shadow-sm">
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2 text-center">
-                    Email PIX
-                  </p>
+                                     <p className="text-lg font-semibold text-slate-500 uppercase tracking-wide mb-2 text-center">
+                     Email PIX
+                   </p>
                   <div className="flex flex-col items-center space-y-2">
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded p-1.5 border border-green-200/50 w-full overflow-hidden min-w-[200px] sm:min-w-[240px]">
-                      <code className="text-[10px] md:text-xs font-mono text-green-700 block text-center break-all">
-                        tesourariaipfarol@gmail.com
-                      </code>
+                                             <code className="text-lg md:text-xl font-mono font-bold text-green-700 block text-center whitespace-nowrap overflow-hidden">
+                         tesourariaipfarol@gmail.com
+                       </code>
                     </div>
                     <button
                       onClick={() => setShowQRCode(true)}
@@ -193,12 +193,12 @@ export default function Home() {
                 </div>
                 <div className="text-center">
                   <div className="bg-white rounded-md p-2 border border-green-200/50 mb-2">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-1">Valor da Cota</p>
-                    <p className="text-sm md:text-base font-bold text-green-700">{formatCurrency(200)}</p>
+                                         <p className="text-lg font-semibold text-slate-600 mb-1">Valor da Cota</p>
+                                          <p className="text-lg md:text-xl font-bold text-green-700">{formatCurrency(200)}</p>
                   </div>
-                  <p className="text-[10px] text-slate-600 leading-relaxed px-1">
-                    Após pagamento, entre em contato para confirmação.
-                  </p>
+                                     <p className="text-lg text-slate-600 leading-relaxed px-1">
+                     Após pagamento, entre em contato para confirmação.
+                   </p>
                 </div>
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function Home() {
         {/* Footer Compacto */}
         <div className="mt-auto pt-8 pb-4 border-t border-slate-200/50">
           <div className="text-center space-y-2">
-            <p className="text-slate-500 text-xs font-medium">
+            <p className="text-slate-500 text-base font-medium">
               Atualizado: {new Date().toLocaleDateString('pt-BR', { 
                 day: '2-digit', 
                 month: '2-digit', 
@@ -217,7 +217,7 @@ export default function Home() {
                 minute: '2-digit'
               })}
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 text-slate-400 text-xs">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 text-slate-400 text-base">
               <span className="font-medium text-slate-600">Feito para a Glória de Deus</span>
               <span className="hidden sm:inline text-slate-300">•</span>
               <span>© 2024 IPF - Todos os direitos reservados</span>
@@ -229,16 +229,15 @@ export default function Home() {
       {/* Modal do QR Code */}
       {showQRCode && (
         <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/80 backdrop-blur flex items-center justify-center z-50 p-4 animate-fadeIn"
           tabIndex={-1}
           onClick={() => setShowQRCode(false)}
           onKeyDown={e => { if (e.key === 'Escape') setShowQRCode(false); }}
         >
-          <div 
-            className="relative bg-white/95 rounded-3xl p-6 md:p-10 max-w-lg w-full mx-auto shadow-xl border-2 border-emerald-200/70 animate-[fadeIn_0.2s_ease] transition-all duration-300"
-            style={{ animation: 'fadeIn 0.2s ease' }}
-            onClick={e => e.stopPropagation()}
-          >
+                     <div 
+             className="relative bg-white/95 rounded-3xl p-6 md:p-10 max-w-2xl w-full mx-auto shadow-xl border-2 border-emerald-200/70 animate-scaleIn transition-all duration-300"
+             onClick={e => e.stopPropagation()}
+           >
             {/* Botão de fechar */}
             <button
               onClick={() => setShowQRCode(false)}
@@ -249,30 +248,30 @@ export default function Home() {
                 <path d="M6 6L14 14M14 6L6 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>
-            <h3 className="text-2xl font-semibold tracking-wide text-emerald-700 mb-6 text-center">
-              QR Code PIX
-            </h3>
-            <div className="flex flex-col items-center gap-4">
-              <div className="hover:scale-105 transition-transform duration-200 cursor-pointer"
-                onClick={() => setShowQRCode(false)}
-              >
-                <Image
-                  src="/assets/QRCODE.jpg"
-                  alt="QR Code PIX"
-                  width={320}
-                  height={320}
-                  className="w-full h-auto max-w-[320px] mx-auto drop-shadow-lg"
-                  priority
-                />
-              </div>
-              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 w-full text-center">
-                <p className="text-base font-semibold text-emerald-700 mb-1">Chave PIX (Email)</p>
-                <CopyPixButton />
-              </div>
+                         <h3 className="text-3xl font-semibold tracking-wide text-emerald-700 mb-8 text-center">
+               QR Code PIX
+             </h3>
+                         <div className="flex flex-col items-center gap-4 w-full">
+               <div className="hover:scale-105 transition-transform duration-200 cursor-pointer w-full flex justify-center"
+                  onClick={() => setShowQRCode(false)}
+                >
+                  <Image
+                    src="/assets/QRCODE.jpg"
+                    alt="QR Code PIX"
+                    width={500}
+                    height={500}
+                    className="w-full h-auto max-w-[500px] max-h-[70vh] mx-auto drop-shadow-lg object-contain"
+                    priority
+                  />
+                </div>
+                             <div className="bg-emerald-50 rounded-xl p-8 border border-emerald-100 w-full text-center">
+                 <p className="text-2xl font-semibold text-emerald-700 mb-4">Chave PIX (Email)</p>
+                 <CopyPixButton />
+               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-6 text-center">
-              Clique no QR Code, no X ou fora desta área para fechar
-            </p>
+                         <p className="text-lg text-gray-500 mt-8 text-center">
+               Clique no QR Code, no X ou fora desta área para fechar
+             </p>
           </div>
         </div>
       )}
@@ -293,13 +292,13 @@ const CopyPixButton = () => {
   return (
     <button
       onClick={handleCopy}
-      className="font-mono text-emerald-800 text-lg bg-white rounded px-2 py-1 border border-emerald-200 hover:bg-emerald-50 transition relative outline-none focus:ring-2 focus:ring-emerald-400"
+             className="font-mono font-bold text-emerald-800 text-3xl bg-white rounded px-4 py-3 border border-emerald-200 hover:bg-emerald-50 transition relative outline-none focus:ring-2 focus:ring-emerald-400 whitespace-nowrap overflow-hidden"
       aria-label="Copiar chave PIX"
       tabIndex={0}
     >
       {pixKey}
       {copied && (
-        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded shadow border border-emerald-200 animate-fade-in">
+                 <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-100 text-emerald-700 text-base font-semibold px-2 py-0.5 rounded shadow border border-emerald-200 animate-fade-in">
           Copiado!
         </span>
       )}
