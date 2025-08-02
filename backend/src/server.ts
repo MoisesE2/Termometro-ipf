@@ -380,6 +380,35 @@ const start = async () => {
       }
     });
 
+    // Rota de login do administrador
+    fastify.post('/api/admin/login', async (request, reply) => {
+      const { username, password } = request.body as { username: string, password: string };
+
+      // Buscar por email OU nome
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: username },
+            { name: username }
+          ],
+          isAdmin: true
+        }
+      });
+
+      if (!user) {
+        return reply.code(401).send({ error: 'Usuário ou senha inválidos' });
+      }
+
+      const senhaCorreta = await bcrypt.compare(password, user.password);
+      if (!senhaCorreta) {
+        return reply.code(401).send({ error: 'Usuário ou senha inválidos' });
+      }
+
+      // Gere e retorne o token JWT
+      const token = fastify.jwt.sign({ userId: user.id, isAdmin: true });
+      return reply.send({ token, user: { id: user.id, name: user.name, email: user.email } });
+    });
+
     // Rota para obter perfil do usuário (protegida)
     fastify.get('/api/auth/profile', {
       onRequest: [fastify.authenticate]
@@ -410,7 +439,7 @@ const start = async () => {
     });
 
     // Rota para verificar token
-    fastify.get('api/auth/verify', {
+    fastify.get('/api/auth/verify', {
       onRequest: [fastify.authenticate]
     }, async (request, reply) => {
       const { userId, email } = request.user as JWTPayload;
@@ -630,7 +659,7 @@ const start = async () => {
         });
 
         // Exemplo: apenas emails específicos podem gerar relatórios
-        const admins = ['admin@igreja.com', 'pastor@igreja.com', 'presbitero@igreja.com'];
+        const admins = ['revphilippe@ipf.com.br', 'agnaldo_presb@ipf.com.br', 'felipeivo_presb@ipf.com.br', 'gleybs_presb@ipf.com.br'];
         if (!user || !admins.includes(user.email)) {
           return reply.code(403).send({ error: 'Acesso negado' });
         }
@@ -881,7 +910,7 @@ const start = async () => {
     });
 
     // Rota para obter todos os timers
-    fastify.get('/api/timers', async () => {
+    fastify.get('/api/timers/all', async () => {
       try {
         const timers = await prisma.timer.findMany({
           orderBy: { createdAt: 'desc' }
@@ -899,7 +928,7 @@ const start = async () => {
         name: string;
         duration: number;
       }
-    }>('/api/timers', async (request, reply) => {
+    }>('/api/timers/all', async (request, reply) => {
       try {
         const { name, duration } = request.body;
         
@@ -965,4 +994,30 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-start(); 
+start();
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrorMessage('');
+
+  try {
+    const res = await fetch('http://localhost:3001/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrorMessage(data.error || 'Erro ao autenticar');
+      return;
+    }
+
+    localStorage.setItem('adminToken', data.token);
+    // Redirecione para o dashboard do admin
+    // router.push('/admin/dashboard');
+  } catch (err) {
+    setErrorMessage('Erro de conexão com o servidor');
+  }
+};

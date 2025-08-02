@@ -339,6 +339,17 @@ interface CotaRequest {
 }
 ```
 
+## 🆕 Mudanças desta branch
+
+- **Autenticação de administradores**: agora é possível autenticar usando nome **ou** e-mail e senha.
+- **Seed automático de administradores**: script `prisma/seed.ts` cria 4 administradores padrão.
+- **Campo `isAdmin`**: adicionado ao modelo `User` e usado para proteger rotas administrativas.
+- **Endpoint `/api/admin/login`**: aceita nome ou e-mail para autenticação de administradores.
+- **Endpoint `/api/timers/all`**: rota pública para listar todos os timers.
+- **Proteção de rotas administrativas**: validação de `isAdmin` nas rotas sensíveis.
+- **Ajustes no frontend**: formulário de login aceita nome ou e-mail.
+
+
 🔒 Considerações de Segurança
 
     Criptografia:
