@@ -12,10 +12,11 @@ datasource db {
 
 // Modelo exemplo para começar - pode ser ajustado conforme necessário
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   email     String   @unique
   password  String   // Campo para armazenar hash da senha
   name      String?
+  isAdmin   Boolean  @default(false) // Flag para indicar se o usuário é administrador
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

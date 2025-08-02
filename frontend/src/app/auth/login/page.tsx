@@ -2,7 +2,7 @@
 "use client"; // Marca como Client Component para usar hooks de estado de UI
 
 import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Para redirecionamento real
+// import { useRouter } from 'next/navigation'; // Descomente se quiser redirecionar
 
 // Componente visual do formulário de login
 const LoginForm: React.FC = () => {
@@ -11,20 +11,29 @@ const LoginForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState(''); // Para exibir mensagens de erro visuais
 
   // Simulação de submissão do formulário (apenas visual)
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(''); // Limpa mensagens anteriores
+    setErrorMessage('');
 
-    console.log('Tentativa de login:', { username, password });
+    try {
+      const res = await fetch('http://localhost:3001/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    // Apenas para demonstração visual:
-    if (username === 'admin' && password === 'admin') {
-      console.log('Login visualmente bem-sucedido!');
-      // Em uma aplicação real, você salvaria o token e redirecionaria:
-      // localStorage.setItem('adminToken', 'mock-jwt-token');
-      // useRouter().push('/admin/dashboard');
-    } else {
-      setErrorMessage('Nome de usuário ou senha inválidos (apenas visual).');
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || 'Usuário ou senha inválidos.');
+        return;
+      }
+
+      localStorage.setItem('adminToken', data.token);
+      // Redirecione para o dashboard do admin, se desejar:
+      // router.push('/admin/dashboard');
+    } catch (err) {
+      setErrorMessage('Erro de conexão com o servidor');
     }
   };
 
