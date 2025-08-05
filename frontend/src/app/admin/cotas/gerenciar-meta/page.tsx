@@ -13,10 +13,10 @@ export default function GestaoMetaPage() {
   useEffect(() => {
     const mockMeta: Meta = {
       metaValor: 1200000,
-      valorArrecadado: 300000,
-      cotasArrecadadas: 1500,
+      valorArrecadado: 26500, // Atualizado para R$ 26.500,00
+      cotasArrecadadas: 133, // 26500 / 200 = 133 cotas
       cotasTotal: 6000,
-      porcentagemAlcancada: 25,
+      porcentagemAlcancada: (26500 / 1200000) * 100, // 2.21%
       ultimaAtualizacao: new Date().toISOString(),
     };
     setMeta(mockMeta);

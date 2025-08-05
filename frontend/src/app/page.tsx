@@ -2,7 +2,6 @@
 
 import { Thermometer } from '@/components/ui/Thermometer';
 import { FaUsers, FaDollarSign, FaBullseye, FaChartLine, FaQrcode } from 'react-icons/fa';
-import { Cota } from '@/models/Cota';
 import { Meta } from '@/models/Meta';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -10,17 +9,9 @@ import Image from 'next/image';
 export default function Home() {
   const [showQRCode, setShowQRCode] = useState(false);
 
-  // Mock de cotas
-  const cotasMock: Cota[] = Array.from({ length: 87 }, (_, i) => ({
-    id: i + 1,
-    valor: 200,
-    descricao: `Cota ${i + 1}`,
-    data: '2025-07-01',
-    responsavel: `Pessoa ${i + 1}`,
-  }));
-
-  const cotasArrecadadas = cotasMock.length;
-  const valorArrecadado = cotasMock.reduce((total, cota) => total + cota.valor, 0);
+  // Valores atualizados para R$ 26.500,00
+  const valorArrecadado = 26500; // R$ 26.500,00
+  const cotasArrecadadas = Math.ceil(valorArrecadado / 200); // 133 cotas
 
   // Meta fixa
   const metaValor = 1200000;

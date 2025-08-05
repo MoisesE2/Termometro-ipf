@@ -996,28 +996,3 @@ process.on('SIGINT', async () => {
 
 start();
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setErrorMessage('');
-
-  try {
-    const res = await fetch('http://localhost:3001/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setErrorMessage(data.error || 'Erro ao autenticar');
-      return;
-    }
-
-    localStorage.setItem('adminToken', data.token);
-    // Redirecione para o dashboard do admin
-    // router.push('/admin/dashboard');
-  } catch (err) {
-    setErrorMessage('Erro de conexão com o servidor');
-  }
-};
