@@ -32,7 +32,7 @@ const LoginForm: React.FC = () => {
       localStorage.setItem('adminToken', data.token);
       // Redirecione para o dashboard do admin, se desejar:
       // router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       setErrorMessage('Erro de conexão com o servidor');
     }
   };
