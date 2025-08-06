@@ -1,19 +1,29 @@
-// src/app/admin/login/page.tsx
-"use client"; // Marca como Client Component para usar hooks de estado de UI
+// src/app/auth/login/page.tsx
+"use client";
 
-import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Descomente se quiser redirecionar
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/auth';
 
 // Componente visual do formulário de login
 const LoginForm: React.FC = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // Para exibir mensagens de erro visuais
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Simulação de submissão do formulário (apenas visual)
+  // Verificar se já está logado
+  useEffect(() => {
+    if (auth.isAuthenticated()) {
+      router.push('/admin/dashboard');
+    }
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setLoading(true);
 
     try {
       const res = await fetch('http://localhost:3001/api/admin/login', {
@@ -29,72 +39,87 @@ const LoginForm: React.FC = () => {
         return;
       }
 
-      localStorage.setItem('adminToken', data.token);
-      // Redirecione para o dashboard do admin, se desejar:
-      // router.push('/admin/dashboard');
-    } catch {
+      // Salvar token
+      auth.setToken(data.token);
+      
+      // Redirecionar para o dashboard
+      router.push('/admin/dashboard');
+    } catch (error) {
+      console.error('Erro no login:', error);
       setErrorMessage('Erro de conexão com o servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8 sm:p-10">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Login do Administrador
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="username" className="block text-gray-700 text-sm font-medium mb-2">
-              Nome de Usuário
-            </label>
-            <input
-              type="text"
-              id="username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
-              placeholder="Digite seu usuário"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Login Administrativo
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Acesse o painel de administração
+          </p>
+        </div>
+        
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="username" className="sr-only">
+                Usuário
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email ou nome de usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Senha
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
-              Senha
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
-              placeholder="Digite sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+
           {errorMessage && (
-            <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {errorMessage}
+            </div>
           )}
-          <button
-            type="submit"
-            className="w-full px-6 py-3 bg-teal-500 text-white font-semibold rounded-md shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50 transition-colors duration-200"
-          >
-            Entrar
-          </button>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 };
 
-// A página em si (src/app/admin/login/page.tsx)
+// A página em si
 export default function AdminLoginPage() {
-  // Em um cenário real, você verificaria o token JWT aqui e redirecionaria
-  // const router = useRouter();
-  // React.useEffect(() => {
-  //   const token = localStorage.getItem('adminToken');
-  //   if (token) {
-  //     router.push('/admin/dashboard');
-  //   }
-  // }, [router]);
-
   return <LoginForm />;
 }

@@ -747,6 +747,66 @@ const start = async () => {
       }
     });
 
+    // Rota para atualizar uma cota
+    fastify.put<{ Params: { id: string }, Body: any }>('/api/cotas/:id', {
+      onRequest: [fastify.authenticate]
+    }, async (request, reply) => {
+      try {
+        const { userId } = request.user as JWTPayload;
+        const { id } = request.params;
+        const { name, cpf, comprovante, valor, observacoes } = request.body;
+
+        const cota = await prisma.cota.findFirst({
+          where: {
+            id,
+            userId
+          }
+        });
+
+        if (!cota) {
+          return reply.code(404).send({ error: 'Cota não encontrada' });
+        }
+
+        // Preparar dados para criptografia
+        const dadosSensiveis = {
+          nome: name || null,
+          cpf: cpf || null,
+          comprovante: comprovante || null,
+          observacoes: observacoes || null
+        };
+
+        // Criptografar dados sensíveis
+        const dadosCriptografados = await encryptSensitiveData(dadosSensiveis);
+
+        // Atualizar a cota
+        const cotaAtualizada = await prisma.cota.update({
+          where: { id },
+          data: {
+            valor: valor || cota.valor,
+            dadosCriptografados,
+            updatedAt: new Date()
+          }
+        });
+
+        reply.send({
+          message: 'Cota atualizada com sucesso',
+          cota: {
+            id: cotaAtualizada.id,
+            valor: cotaAtualizada.valor,
+            nome: name || null,
+            cpf: cpf ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '***.***.***-**') : null,
+            temComprovante: !!comprovante,
+            createdAt: cotaAtualizada.createdAt,
+            updatedAt: cotaAtualizada.updatedAt
+          }
+        });
+
+      } catch (error) {
+        fastify.log.error('Erro ao atualizar cota:', error);
+        reply.code(500).send({ error: 'Erro interno do servidor' });
+      }
+    });
+
     // ========== WEBSOCKET COM AUTENTICAÇÃO ========== 
     // Middleware de autenticação para Socket.IO
     io.use(async (socket, next) => {
