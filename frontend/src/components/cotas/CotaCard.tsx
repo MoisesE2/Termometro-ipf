@@ -5,7 +5,7 @@ import { Cota } from "@/models/Cota";
 interface Props {
   cota: Cota;
   onEdit: (cota: Cota) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function CotaCard({ cota, onEdit, onDelete }: Props) {

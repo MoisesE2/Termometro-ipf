@@ -70,9 +70,9 @@ export const auth = {
   fetchWithAuth: async (url: string, options: RequestInit = {}): Promise<Response> => {
     const token = auth.getToken();
     
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (token) {

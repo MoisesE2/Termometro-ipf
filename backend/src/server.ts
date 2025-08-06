@@ -748,7 +748,16 @@ const start = async () => {
     });
 
     // Rota para atualizar uma cota
-    fastify.put<{ Params: { id: string }, Body: any }>('/api/cotas/:id', {
+    fastify.put<{ 
+      Params: { id: string }, 
+      Body: {
+        name?: string;
+        cpf?: string;
+        comprovante?: string;
+        valor?: number;
+        observacoes?: string;
+      }
+    }>('/api/cotas/:id', {
       onRequest: [fastify.authenticate]
     }, async (request, reply) => {
       try {
