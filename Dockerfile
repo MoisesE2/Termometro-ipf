@@ -1,53 +1,32 @@
-FROM node:18-alpine AS base
+# Use uma imagem base do Node.js
+FROM node:20-alpine AS builder
 
-# Instalar dependências do sistema
-RUN apk add --no-cache openssl libc6-compat
-
-# Configurar diretório de trabalho
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de configuração
+# Copiar arquivos de dependências
 COPY package*.json ./
-COPY nixpacks.toml ./
 
-# Instalar dependências do monorepo
+# Instalar dependências (incluindo dev dependencies para o build)
 RUN npm ci
 
-# Copiar código do backend
-COPY backend/package*.json ./backend/
-COPY backend/prisma ./backend/prisma/
-COPY backend/src ./backend/src/
-COPY backend/tsconfig.json ./backend/
+# Copiar código fonte
+COPY . .
 
-# Instalar dependências do backend
-RUN cd backend && npm ci
+# Build da aplicação (sem executar testes/lint)
+RUN npm run build:production
 
-# Gerar cliente Prisma
-RUN cd backend && npx prisma generate
+# Estágio de produção
+FROM nginx:alpine
 
-# Copiar código do frontend
-COPY frontend/package*.json ./frontend/
-COPY frontend/src ./frontend/src/
-COPY frontend/public ./frontend/public/
-COPY frontend/tsconfig.json ./frontend/
-COPY frontend/next.config.ts ./frontend/
-COPY frontend/postcss.config.mjs ./frontend/
-COPY frontend/tailwind.config.ts ./frontend/
+# Copiar arquivos buildados para o nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Instalar dependências do frontend
-RUN cd frontend && npm ci
+# Copiar configuração personalizada do nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Build das aplicações
-RUN cd backend && npm run build
-RUN cd frontend && npm run build
+# Expor porta 80
+EXPOSE 80
 
-# Remover dependências de desenvolvimento
-RUN npm prune --production
-RUN cd backend && npm prune --production
-RUN cd frontend && npm prune --production
-
-# Expor portas
-EXPOSE 3000 3001
-
-# Comando para iniciar a aplicação
-CMD ["npm", "run", "start"] 
+# Comando para iniciar o nginx
+CMD ["nginx", "-g", "daemon off;"] 
