@@ -155,9 +155,9 @@ export default function Home() {
         </div>
 
         {/* Conteúdo Principal */}
-        <div className="flex flex-col lg:flex-row gap-y-4 lg:gap-x-8 w-full items-stretch pb-3">
+        <div className="flex flex-col lg:flex-row gap-y-4 lg:gap-x-8 w-full items-center lg:items-stretch justify-center pb-3">
           {/* Termômetro */}
-          <div className="flex-1 bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-6 lg:p-10 border border-white/40 w-full max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-6 items-center min-h-0">
+          <div className="flex-1 bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-3 lg:p-4 border border-white/40 w-full max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-3 items-center mx-auto">
             <div className="text-center mb-2 md:mb-2">
                               <h3 className="text-lg lg:text-xl font-bold tracking-wide text-slate-800 mb-1">Barra de Progresso</h3>
                               <p className="text-xl text-gray-700">
@@ -176,7 +176,7 @@ export default function Home() {
           </div>
 
           {/* Estatísticas */}
-          <div className="flex-[2.3] bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-6 lg:p-10 border border-white/40 w-full lg:max-w-2xl max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-6 items-center min-h-[320px]">
+          <div className="flex-[2.3] bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-3 lg:p-4 border border-white/40 w-full lg:max-w-2xl max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-3 items-center min-h-[180px] mx-auto">
             <div className="text-center mb-3">
                               <h2 className="text-lg md:text-xl lg:text-3xl font-bold tracking-wide text-slate-800 mb-1">
                   Estatísticas
@@ -217,7 +217,7 @@ export default function Home() {
           </div>
 
           {/* Seção PIX Compacta */}
-          <div className="flex-1 bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-6 lg:p-10 border border-white/40 w-full max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-6 items-center min-h-[280px]">
+          <div className="flex-1 bg-gradient-to-b from-white via-white to-emerald-8 rounded-2xl lg:rounded-3xl shadow-lg p-3 lg:p-4 border border-white/40 w-full max-w-md hover:scale-105 hover:shadow-2xl transition-all duration-300 flex flex-col gap-3 items-center min-h-[160px] mx-auto">
             <div className="text-center mb-3">
               <div className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-2 drop-shadow">
                 <FaQrcode className="text-xs md:text-sm text-white" />
