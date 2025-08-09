@@ -1,0 +1,6 @@
+[build]
+type = "dockerfile"
+dockerfile = "Dockerfile"
+
+[deploy]
+port = 3000

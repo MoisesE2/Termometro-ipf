@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic'
+
 import { Thermometer } from '@/components/ui/Thermometer';
 import { FaUsers, FaDollarSign, FaQrcode } from 'react-icons/fa';
 import { Meta } from '@/models/Meta';
