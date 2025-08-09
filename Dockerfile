@@ -19,6 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 # Definir variáveis de ambiente necessárias
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV SKIP_ENV_VALIDATION=true
 
 # Build da aplicação
 RUN npm run build
