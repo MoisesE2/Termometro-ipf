@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
+  // Configurações para produção
+  output: 'standalone',
+  outputFileTracingIncludes: {
+    '/': ['./public/**/*'],
+  },
+  // Configuração para evitar problemas com SSR
+  reactStrictMode: true,
 }
 
 export default nextConfig
