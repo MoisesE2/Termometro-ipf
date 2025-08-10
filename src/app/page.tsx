@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { Thermometer } from '@/components/ui/Thermometer';
 import { FaUsers, FaDollarSign, FaQrcode } from 'react-icons/fa';
 import { Meta } from '@/models/Meta';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 
 export default function Home() {
@@ -89,6 +89,23 @@ export default function Home() {
       currency: 'BRL',
     }).format(value);
   };
+
+  // Evitar mismatch de hidratação com data/hora
+  const [nowStr, setNowStr] = useState('');
+  useEffect(() => {
+    try {
+      const s = new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date());
+      setNowStr(s);
+    } catch {
+      // noop
+    }
+  }, []);
 
 
 
@@ -271,13 +288,7 @@ export default function Home() {
         <div className="mt-auto pt-8 pb-4 border-t border-slate-200/50">
           <div className="text-center space-y-2">
             <p className="text-slate-500 text-base font-medium">
-              Atualizado: {new Date().toLocaleDateString('pt-BR', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+              Atualizado: <span suppressHydrationWarning>{nowStr || ''}</span>
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 text-slate-400 text-base">
               <span className="font-medium text-slate-600">Feito para a Glória de Deus</span>
