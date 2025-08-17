@@ -15,7 +15,7 @@ export default function Home() {
 
   // Constantes gerais
   const valorCota = 200;
-  const valorArrecadado = 44600; // R$ 44.600,00 (valor atual)
+  const valorArrecadado = 50200; // R$ 50.200,00 (valor atual) - 251 cotas
   const cotasArrecadadas = Math.ceil(valorArrecadado / valorCota);
 
   // Metas por etapa
