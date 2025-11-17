@@ -136,7 +136,7 @@ export default function Home() {
                 Medidor de Arrecadação
               </h1>
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-teal-600 font-medium italic">
-                &ldquo;Alargando Fronteiras&rdquo;
+                "Alargando Fronteiras"
               </p>
             </div>
           </div>
@@ -288,7 +288,7 @@ export default function Home() {
         <div className="mt-auto pt-8 pb-4 border-t border-slate-200/50">
           <div className="text-center space-y-2">
             <p className="text-slate-500 text-base font-medium">
-              Atualizado: <span suppressHydrationWarning>{nowStr || ''}</span>
+              Atualizado: <span suppressHydrationWarning>{nowStr || 'Carregando...'}</span>
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 text-slate-400 text-base">
               <span className="font-medium text-slate-600">Feito para a Glória de Deus</span>

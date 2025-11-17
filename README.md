@@ -80,6 +80,23 @@ Este projeto foi configurado especificamente para funcionar com Dokploy:
    - Build Type: Dockerfile
    - Port: 3000
 
+### Configuração de HTTPS (Site Seguro)
+
+Para que o site apareça como seguro no navegador, é necessário configurar HTTPS:
+
+1. **No Dokploy**:
+   - Configure um domínio personalizado na aplicação
+   - Habilite o SSL/TLS automático (Let's Encrypt) no Dokploy
+   - O Dokploy geralmente oferece certificados SSL gratuitos via Let's Encrypt
+
+2. **Alternativa com Proxy Reverso**:
+   - Se estiver usando um proxy reverso (Nginx, Traefik, etc.), configure o SSL no proxy
+   - O Next.js será acessado via HTTP internamente, mas o proxy fornecerá HTTPS externamente
+
+3. **Headers de Segurança**:
+   - O projeto já inclui headers de segurança configurados no `next.config.ts`
+   - Estes headers ajudam a melhorar a segurança mesmo sem HTTPS completo
+
 ### Solução de Problemas de Deploy
 
 Se encontrar erros relacionados ao componente `Html` durante o build:
@@ -87,6 +104,16 @@ Se encontrar erros relacionados ao componente `Html` durante o build:
 1. Certifique-se de que as configurações do `next.config.ts` estão aplicadas
 2. Verifique se o `Dockerfile` está sendo utilizado (não o Nixpacks)
 3. Confirme que todas as variáveis de ambiente estão definidas
+
+### Correção de Erros React
+
+Se encontrar o erro React #418 (Minified React error #418):
+
+1. **Problema**: Geralmente causado por entidades HTML ou renderização incorreta de texto
+2. **Solução**: O projeto já foi corrigido para:
+   - Substituir entidades HTML (`&ldquo;`, `&rdquo;`) por aspas normais
+   - Garantir que elementos com `suppressHydrationWarning` sempre tenham conteúdo válido
+   - Adicionar headers de segurança no Next.js
 
 ## 📊 Estrutura do Projeto
 
