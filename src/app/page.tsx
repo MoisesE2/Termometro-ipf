@@ -136,7 +136,7 @@ export default function Home() {
                 Medidor de Arrecadação
               </h1>
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-teal-600 font-medium italic">
-                "Alargando Fronteiras"
+                &quot;Alargando Fronteiras&quot;
               </p>
             </div>
           </div>
