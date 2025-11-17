@@ -80,22 +80,50 @@ Este projeto foi configurado especificamente para funcionar com Dokploy:
    - Build Type: Dockerfile
    - Port: 3000
 
-### Configuração de HTTPS (Site Seguro)
+### Configuração de HTTPS (Site Seguro) 🔒
 
-Para que o site apareça como seguro no navegador, é necessário configurar HTTPS:
+**IMPORTANTE**: Ter apenas os registros DNS configurados não é suficiente. É necessário configurar SSL/HTTPS no Dokploy.
 
-1. **No Dokploy**:
-   - Configure um domínio personalizado na aplicação
-   - Habilite o SSL/TLS automático (Let's Encrypt) no Dokploy
-   - O Dokploy geralmente oferece certificados SSL gratuitos via Let's Encrypt
+#### Passo a Passo no Dokploy:
 
-2. **Alternativa com Proxy Reverso**:
-   - Se estiver usando um proxy reverso (Nginx, Traefik, etc.), configure o SSL no proxy
-   - O Next.js será acessado via HTTP internamente, mas o proxy fornecerá HTTPS externamente
+1. **Acesse a aplicação no Dokploy**
+   - Vá para a página da sua aplicação no painel do Dokploy
 
-3. **Headers de Segurança**:
-   - O projeto já inclui headers de segurança configurados no `next.config.ts`
-   - Estes headers ajudam a melhorar a segurança mesmo sem HTTPS completo
+2. **Configure o Domínio**:
+   - Na seção "Domains" ou "Domínios" da aplicação
+   - Adicione seu domínio (ex: `ipbfarol.com.br` ou `www.ipbfarol.com.br`)
+   - Certifique-se de que os registros DNS já estão apontando para o IP do servidor (72.60.5.186)
+
+3. **Habilite SSL/TLS**:
+   - Procure pela opção "SSL" ou "Certificados" na configuração do domínio
+   - Ative "SSL Automático" ou "Let's Encrypt"
+   - O Dokploy irá:
+     - Verificar se o domínio está apontando corretamente
+     - Solicitar um certificado SSL gratuito do Let's Encrypt
+     - Configurar automaticamente o HTTPS
+
+4. **Aguarde a Configuração**:
+   - Pode levar alguns minutos para o certificado ser emitido
+   - Após a configuração, acesse o site via `https://` (não `http://`)
+
+5. **Verificação**:
+   - Acesse `https://seu-dominio.com.br`
+   - O navegador deve mostrar um cadeado verde (site seguro)
+   - Se ainda aparecer "não seguro", verifique:
+     - Se está acessando via HTTPS (não HTTP)
+     - Se o certificado foi emitido corretamente
+     - Se há algum erro na configuração do domínio
+
+#### Troubleshooting:
+
+- **Erro "Certificado não confiável"**: Aguarde alguns minutos e tente novamente
+- **Erro "Domínio não encontrado"**: Verifique se os registros DNS estão propagados (pode levar até 48h)
+- **Ainda aparece "não seguro"**: Certifique-se de acessar via `https://` e não `http://`
+
+#### Headers de Segurança:
+
+- O projeto já inclui headers de segurança configurados no `next.config.ts`
+- Estes headers ajudam a melhorar a segurança mesmo sem HTTPS completo
 
 ### Solução de Problemas de Deploy
 

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Configurações mínimas para produção
   output: 'standalone',
   // Configuração para evitar problemas com SSR
-  reactStrictMode: false,
+  reactStrictMode: true,
   // Configurações para melhor compatibilidade com Docker
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
