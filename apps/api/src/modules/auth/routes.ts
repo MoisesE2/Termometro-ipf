@@ -14,7 +14,8 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.code(400).send({ message: 'Payload inválido.', errors: parse.error.flatten() });
     }
 
-    const { email, password } = parse.data;
+    const email = parse.data.email.trim().toLowerCase();
+    const { password } = parse.data;
     const admin = await app.prisma.adminUser.findUnique({ where: { email } });
 
     if (!admin || !admin.isActive) {

@@ -86,4 +86,33 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Safe area (notch / home indicator em celulares) */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+.pl-safe {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+}
+.pr-safe {
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+/* Scroll horizontal suave em filtros / tabelas no mobile */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Oculta scrollbar mas mantém scroll (filtros de ano) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 

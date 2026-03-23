@@ -13,12 +13,13 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# next.js (qualquer app no monorepo — não use só "/.next/" na raiz)
+.next/
+out/
 
 # production
 /build
+dist/
 
 # misc
 .DS_Store
