@@ -9,22 +9,32 @@ export interface AuthUser {
 
 import { buildApiUrl } from './api';
 
+function hasBrowserStorage(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof globalThis.localStorage !== 'undefined' &&
+    typeof globalThis.localStorage.getItem === 'function' &&
+    typeof globalThis.localStorage.setItem === 'function' &&
+    typeof globalThis.localStorage.removeItem === 'function'
+  );
+}
+
 export const auth = {
   // Obter token do localStorage
   getToken: (): string | null => {
-    if (typeof window === 'undefined') return null;
+    if (!hasBrowserStorage()) return null;
     return localStorage.getItem('adminToken');
   },
 
   // Salvar token no localStorage
   setToken: (token: string): void => {
-    if (typeof window === 'undefined') return;
+    if (!hasBrowserStorage()) return;
     localStorage.setItem('adminToken', token);
   },
 
   // Remover token do localStorage
   removeToken: (): void => {
-    if (typeof window === 'undefined') return;
+    if (!hasBrowserStorage()) return;
     localStorage.removeItem('adminToken');
   },
 

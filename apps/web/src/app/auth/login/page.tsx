@@ -33,6 +33,11 @@ const LoginForm: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
 
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('Resposta inválida da API de autenticação.');
+      }
+
       const data = await res.json();
 
       if (!res.ok) {

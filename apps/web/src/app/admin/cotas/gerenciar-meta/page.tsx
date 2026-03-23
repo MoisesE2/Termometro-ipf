@@ -4,31 +4,44 @@
 import { useEffect, useState } from "react";
 import { Meta } from "@/models/Meta";
 import MetaCard from "@/components/metas/MetaCard";
-import MetaEditForm from "@/components/metas/MetaEditForm";
+import { fetchJson } from "@/lib/api";
 
 export default function GestaoMetaPage() {
   const [meta, setMeta] = useState<Meta | null>(null);
-  const [editando, setEditando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const mockMeta: Meta = {
-      metaValor: 1200000,
-      valorArrecadado: 64000, // Atualizado para R$ 64.000,00 - 320 cotas
-      cotasArrecadadas: 320, // 64000 / 200 = 320 cotas
-      cotasTotal: 6000,
-      porcentagemAlcancada: (64000 / 1200000) * 100, // 5.33%
-      ultimaAtualizacao: new Date().toISOString(),
-    };
-    setMeta(mockMeta);
-  }, []);
+    const loadMeta = async () => {
+      try {
+        const response = await fetchJson("/stats/summary");
+        if (!response.ok) {
+          throw new Error("Falha ao carregar dados da meta.");
+        }
 
-  const atualizarMeta = async (novaMetaValor: number) => {
-    setMeta((prev) =>
-      prev ? { ...prev, metaValor: novaMetaValor } : null
-    );
-    setEditando(false);
-    alert("Meta atualizada com sucesso!");
-  };
+        const data = (await response.json()) as {
+          totalReceived?: number;
+          totalQuotas?: number;
+        };
+
+        const metaValor = 1_200_000;
+        const valorArrecadado = Number(data.totalReceived ?? 0);
+
+        setMeta({
+          metaValor,
+          valorArrecadado,
+          cotasArrecadadas: Number(data.totalQuotas ?? 0),
+          cotasTotal: metaValor / 200,
+          porcentagemAlcancada: (valorArrecadado / metaValor) * 100,
+          ultimaAtualizacao: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error(err);
+        setError("Não foi possível carregar os dados da meta.");
+      }
+    };
+
+    loadMeta();
+  }, []);
 
   return (
     <main className="min-h-screen bg-gray-50 py-12 px-4 flex flex-col items-center">
@@ -36,31 +49,12 @@ export default function GestaoMetaPage() {
         Gestão de Meta
       </h1>
 
-      {meta ? (
-        <>
-          {!editando ? (
-            <>
-              <div className="max-w-md w-full">
-                <MetaCard meta={meta} />
-              </div>
-
-              <button
-                onClick={() => setEditando(true)}
-                className="mt-10 px-8 py-3 bg-[#3FA34D] hover:bg-[#33913F] text-white rounded-lg font-semibold shadow-md transition focus:outline-none focus:ring-2 focus:ring-[#3FA34D] focus:ring-offset-2"
-              >
-                Editar Meta
-              </button>
-            </>
-          ) : (
-            <div className="max-w-md w-full">
-              <MetaEditForm
-                valorAtual={meta.metaValor}
-                onCancel={() => setEditando(false)}
-                onSave={atualizarMeta}
-              />
-            </div>
-          )}
-        </>
+      {error ? (
+        <p className="text-center text-red-600">{error}</p>
+      ) : meta ? (
+        <div className="max-w-md w-full">
+          <MetaCard meta={meta} />
+        </div>
       ) : (
         <p className="text-center text-gray-500">Carregando...</p>
       )}

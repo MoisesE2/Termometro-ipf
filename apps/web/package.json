@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "NODE_OPTIONS= next dev --turbopack",
     "build": "next build",
     "build:prod": "SKIP_ENV_VALIDATION=true next build",
     "start": "next start",

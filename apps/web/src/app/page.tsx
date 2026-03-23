@@ -149,6 +149,7 @@ export default function Home() {
               width={80}
               height={80}
               className="flex-shrink-0"
+              style={{ height: "auto" }}
               priority
             />
             <div className="text-center">

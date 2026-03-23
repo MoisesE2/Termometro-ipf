@@ -8,6 +8,30 @@ import CotaForm from "@/components/cotas/CotaForm";
 import { Cota } from "@/models/Cota";
 import { buildApiUrl } from "@/lib/api";
 
+const getStoredToken = (): string | null => {
+  if (
+    typeof window === "undefined" ||
+    typeof globalThis.localStorage === "undefined" ||
+    typeof globalThis.localStorage.getItem !== "function"
+  ) {
+    return null;
+  }
+
+  return localStorage.getItem("adminToken");
+};
+
+const removeStoredToken = (): void => {
+  if (
+    typeof window === "undefined" ||
+    typeof globalThis.localStorage === "undefined" ||
+    typeof globalThis.localStorage.removeItem !== "function"
+  ) {
+    return;
+  }
+
+  localStorage.removeItem("adminToken");
+};
+
 export default function GerenciarCotasPage() {
   const router = useRouter();
   const [cotas, setCotas] = useState<Cota[]>([]);
@@ -20,7 +44,7 @@ export default function GerenciarCotasPage() {
   // Verificar autenticação ao carregar a página
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('adminToken');
+      const token = getStoredToken();
       
       if (!token) {
         router.push('/auth/login');
@@ -37,7 +61,7 @@ export default function GerenciarCotasPage() {
         });
 
         if (!response.ok) {
-          localStorage.removeItem('adminToken');
+          removeStoredToken();
           router.push('/auth/login');
           return;
         }
@@ -46,7 +70,7 @@ export default function GerenciarCotasPage() {
         await loadCotas();
       } catch (error) {
         console.error('Erro na verificação de autenticação:', error);
-        localStorage.removeItem('adminToken');
+        removeStoredToken();
         router.push('/auth/login');
       }
     };
@@ -56,7 +80,7 @@ export default function GerenciarCotasPage() {
 
   const loadCotas = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getStoredToken();
       
       const response = await fetch(buildApiUrl('/donations'), {
         headers: {
@@ -96,7 +120,7 @@ export default function GerenciarCotasPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getStoredToken();
       
       const response = await fetch(buildApiUrl(`/donations/${id}`), {
         method: 'DELETE',
@@ -123,7 +147,7 @@ export default function GerenciarCotasPage() {
 
   const handleUpdate = async (cotaAtualizada: Cota) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getStoredToken();
       
       const response = await fetch(buildApiUrl(`/donations/${cotaAtualizada.id}`), {
         method: 'PATCH',

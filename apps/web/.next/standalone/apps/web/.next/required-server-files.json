@@ -284,6 +284,16 @@
     },
     "turbopack": {
       "root": "/home/moises/Documentos/trabalho/Termometro-ipf"
+    },
+    "_originalRewrites": {
+      "beforeFiles": [],
+      "afterFiles": [
+        {
+          "source": "/api/:path*",
+          "destination": "http://127.0.0.1:3001/:path*"
+        }
+      ],
+      "fallback": []
     }
   },
   "appDir": "/home/moises/Documentos/trabalho/Termometro-ipf/apps/web",
@@ -305,7 +315,8 @@
     ".next/server/server-reference-manifest.json",
     ".next/BUILD_ID",
     ".next/server/next-font-manifest.js",
-    ".next/server/next-font-manifest.json"
+    ".next/server/next-font-manifest.json",
+    ".next/server/instrumentation.js"
   ],
   "ignore": [
     "../../node_modules/next/dist/compiled/@ampproject/toolbox-optimizer/**/*"

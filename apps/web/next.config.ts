@@ -12,6 +12,16 @@ const nextConfig: NextConfig = {
   // Configurações básicas
   poweredByHeader: false,
   trailingSlash: false,
+  async rewrites() {
+    if (process.env.NEXT_PUBLIC_API_BASE_URL) return [];
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://127.0.0.1:3001/:path*',
+      },
+    ];
+  },
   // Configurações de segurança
   async headers() {
     return [
