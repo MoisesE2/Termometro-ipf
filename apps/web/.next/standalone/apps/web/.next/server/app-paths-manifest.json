@@ -1,0 +1,11 @@
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/admin/cotas/gerenciar-cotas/page": "app/admin/cotas/gerenciar-cotas/page.js",
+  "/admin/cotas/gerenciar-meta/page": "app/admin/cotas/gerenciar-meta/page.js",
+  "/admin/cotas/registrar-cotas/page": "app/admin/cotas/registrar-cotas/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/pages/admin/dashboard/cotas/registrar/page": "app/pages/admin/dashboard/cotas/registrar/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js"
+}

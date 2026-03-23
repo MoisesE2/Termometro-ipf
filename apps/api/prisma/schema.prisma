@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model AdminUser {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         AdminRole @default(ADMIN)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  donations Donation[] @relation("CreatedByAdmin")
+
+  @@map("admin_users")
+}
+
+model Donation {
+  id               String    @id @default(uuid()) @db.Uuid
+  donorName        String    @map("donor_name")
+  quotaCount       Int       @map("quota_count")
+  quotaUnitValue   Decimal   @default(200.00) @db.Decimal(10, 2) @map("quota_unit_value")
+  amountPaid       Decimal   @db.Decimal(10, 2) @map("amount_paid")
+  paymentDate      DateTime  @db.Date @map("payment_date")
+  createdByAdminId String    @db.Uuid @map("created_by_admin_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  createdBy AdminUser @relation("CreatedByAdmin", fields: [createdByAdminId], references: [id], onDelete: Restrict)
+
+  @@map("donations")
+}

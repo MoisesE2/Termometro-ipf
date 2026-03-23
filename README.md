@@ -1,191 +1,116 @@
-# Termômetro IPF - Sistema de Arrecadação "Alargando Fronteiras"
+# Termometro IPF Monorepo
 
-Este é um projeto [Next.js](https://nextjs.org) para acompanhamento em tempo real do progresso de arrecadação para o projeto "Alargando Fronteiras" da IPF.
+Monorepo com:
+- `apps/web`: frontend Next.js
+- `apps/api`: backend Fastify + Prisma + PostgreSQL
+- `packages/shared`: tipos compartilhados
 
-## 🚀 Funcionalidades
+## Requisitos
 
-- **Termômetro Visual**: Acompanhamento visual do progresso de arrecadação
-- **Metas por Etapas**: Visualização das metas para 2025, 2026, 2027 e total
-- **PIX Integrado**: Sistema de doação via PIX com QR Code
-- **Design Responsivo**: Interface adaptável para todos os dispositivos
-- **Atualização em Tempo Real**: Dados atualizados automaticamente
+- Node.js 20+
+- npm 10+
+- PostgreSQL 14+
 
-## 🛠️ Tecnologias
-
-- **Next.js 15** com App Router
-- **React 19**
-- **TypeScript**
-- **Tailwind CSS**
-- **React Icons**
-
-## 📋 Pré-requisitos
-
-- Node.js 18.x ou superior
-- npm ou yarn
-
-## 🚀 Instalação e Desenvolvimento
+## Instalação
 
 ```bash
-# Instalar dependências
 npm install
-
-# Executar servidor de desenvolvimento
-npm run dev
-
-# Build para produção
-npm run build
-
-# Iniciar servidor de produção
-npm start
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver o resultado.
+## Desenvolvimento
 
-## 🐳 Deploy com Docker
-
-O projeto inclui um `Dockerfile` otimizado para produção:
+Executar frontend e backend separadamente:
 
 ```bash
-# Build da imagem
-docker build -t termometro-ipf .
-
-# Executar container
-docker run -p 3000:3000 termometro-ipf
+npm run dev:web
+npm run dev:api
 ```
 
-## 🚀 Deploy no Dokploy
+URLs padrão:
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:3001`
 
-### Configurações Especiais
+## Banco de dados (PostgreSQL)
 
-Este projeto foi configurado especificamente para funcionar com Dokploy:
+1. Crie um banco vazio (ex.: `termometro_ipf`).
+2. Copie `apps/api/.env.example` para `apps/api/.env` e ajuste `DATABASE_URL`.
+3. Rode as migrations:
 
-1. **Arquivo `.dockerignore`**: Evita problemas com cache e dependências
-2. **Configuração `next.config.ts`**: Configurado para build standalone
-3. **Dockerfile personalizado**: Otimizado para Alpine Linux
-4. **Build estático**: Configurado para gerar páginas estáticas
-
-### Passos para Deploy
-
-1. **Push para o repositório**:
-   ```bash
-   git add .
-   git commit -m "Configurações para deploy no Dokploy"
-   git push origin main
-   ```
-
-2. **No Dokploy**:
-   - Criar nova aplicação
-   - Conectar ao repositório GitHub
-   - O Dokploy utilizará automaticamente o Dockerfile personalizado
-   - Build Type: Dockerfile
-   - Port: 3000
-
-### Configuração de HTTPS (Site Seguro) 🔒
-
-**IMPORTANTE**: Ter apenas os registros DNS configurados não é suficiente. É necessário configurar SSL/HTTPS no Dokploy.
-
-#### Passo a Passo no Dokploy:
-
-1. **Acesse a aplicação no Dokploy**
-   - Vá para a página da sua aplicação no painel do Dokploy
-
-2. **Configure o Domínio**:
-   - Na seção "Domains" ou "Domínios" da aplicação
-   - Adicione seu domínio (ex: `ipbfarol.com.br` ou `www.ipbfarol.com.br`)
-   - Certifique-se de que os registros DNS já estão apontando para o IP do servidor (72.60.5.186)
-
-3. **Habilite SSL/TLS**:
-   - Procure pela opção "SSL" ou "Certificados" na configuração do domínio
-   - Ative "SSL Automático" ou "Let's Encrypt"
-   - O Dokploy irá:
-     - Verificar se o domínio está apontando corretamente
-     - Solicitar um certificado SSL gratuito do Let's Encrypt
-     - Configurar automaticamente o HTTPS
-
-4. **Aguarde a Configuração**:
-   - Pode levar alguns minutos para o certificado ser emitido
-   - Após a configuração, acesse o site via `https://` (não `http://`)
-
-5. **Verificação**:
-   - Acesse `https://seu-dominio.com.br`
-   - O navegador deve mostrar um cadeado verde (site seguro)
-   - Se ainda aparecer "não seguro", verifique:
-     - Se está acessando via HTTPS (não HTTP)
-     - Se o certificado foi emitido corretamente
-     - Se há algum erro na configuração do domínio
-
-#### Troubleshooting:
-
-- **Erro "Certificado não confiável"**: Aguarde alguns minutos e tente novamente
-- **Erro "Domínio não encontrado"**: Verifique se os registros DNS estão propagados (pode levar até 48h)
-- **Ainda aparece "não seguro"**: Certifique-se de acessar via `https://` e não `http://`
-
-#### Headers de Segurança:
-
-- O projeto já inclui headers de segurança configurados no `next.config.ts`
-- Estes headers ajudam a melhorar a segurança mesmo sem HTTPS completo
-
-### Solução de Problemas de Deploy
-
-Se encontrar erros relacionados ao componente `Html` durante o build:
-
-1. Certifique-se de que as configurações do `next.config.ts` estão aplicadas
-2. Verifique se o `Dockerfile` está sendo utilizado (não o Nixpacks)
-3. Confirme que todas as variáveis de ambiente estão definidas
-
-### Correção de Erros React
-
-Se encontrar o erro React #418 (Minified React error #418):
-
-1. **Problema**: Geralmente causado por entidades HTML ou renderização incorreta de texto
-2. **Solução**: O projeto já foi corrigido para:
-   - Substituir entidades HTML (`&ldquo;`, `&rdquo;`) por aspas normais
-   - Garantir que elementos com `suppressHydrationWarning` sempre tenham conteúdo válido
-   - Adicionar headers de segurança no Next.js
-
-## 📊 Estrutura do Projeto
-
-```
-src/
-├── app/                 # App Router do Next.js
-│   ├── layout.tsx      # Layout principal
-│   ├── page.tsx        # Página inicial
-│   └── ...             # Outras páginas
-├── components/         # Componentes React
-│   ├── ui/            # Componentes de interface
-│   ├── cotas/         # Componentes de cotas
-│   └── metas/         # Componentes de metas
-├── models/            # Modelos TypeScript
-└── lib/               # Bibliotecas e utilitários
+```bash
+npm run db:deploy
 ```
 
-## 🔧 Configurações de Produção
+4. Crie o super administrador inicial:
 
-- **Output**: Standalone para Docker
-- **Static Generation**: Páginas pré-renderizadas
-- **React Strict Mode**: Habilitado
-- **Telemetria**: Desabilitada
-
-## 📝 Atualizações de Valores
-
-Para atualizar os valores de arrecadação, edite o arquivo `src/app/page.tsx`:
-
-```typescript
-const valorArrecadado = 44600; // Atualizar este valor
+```bash
+npm run db:seed
 ```
 
-## 🤝 Contribuição
+### Tabelas criadas na migration inicial
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+- `admin_users`
+  - `id` (UUID, PK)
+  - `name`
+  - `email` (UNIQUE)
+  - `password_hash` (bcrypt)
+  - `role` (`SUPER_ADMIN` | `ADMIN`)
+  - `is_active`
+  - `created_at`, `updated_at`
 
-## 📄 Licença
+- `donations`
+  - `id` (UUID, PK)
+  - `donor_name`
+  - `quota_count` (CHECK > 0)
+  - `quota_unit_value` (DECIMAL, default 200.00)
+  - `amount_paid` (DECIMAL, CHECK >= 0)
+  - `payment_date`
+  - `created_by_admin_id` (FK -> `admin_users.id`)
+  - `created_at`, `updated_at`
 
-Este projeto é desenvolvido para a IPF - Igreja Presbiteriana de Fortaleza.
+Migration SQL: `apps/api/prisma/migrations/0001_init/migration.sql`.
 
----
+## Endpoints principais
 
-**Feito para a Glória de Deus** 🙏
+Autenticação:
+- `POST /auth/login`
+- `GET /auth/me`
+
+Gestão de administradores (somente `SUPER_ADMIN`):
+- `POST /admin-users`
+- `GET /admin-users`
+- `PATCH /admin-users/:id`
+- `PATCH /admin-users/:id/password`
+- `DELETE /admin-users/:id`
+
+Doações/cotas (admin autenticado):
+- `POST /donations`
+- `GET /donations`
+- `PATCH /donations/:id`
+- `DELETE /donations/:id`
+
+Resumo para termômetro (público):
+- `GET /stats/summary`
+  - retorno: `totalQuotas`, `totalReceived`, `quotaUnitValue`
+
+## Variáveis de ambiente do backend
+
+Arquivo: `apps/api/.env`
+
+- `DATABASE_URL`
+- `PORT`
+- `HOST`
+- `CORS_ORIGIN`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `SUPER_ADMIN_NAME`
+- `SUPER_ADMIN_EMAIL`
+- `SUPER_ADMIN_PASSWORD`
+
+## Dokploy (resumo)
+
+1. Suba um serviço PostgreSQL no Dokploy.
+2. Suba o backend (`apps/api`) com as variáveis acima.
+3. No deploy do backend, execute migrations + seed:
+   - `npm run db:deploy`
+   - `npm run db:seed`
+4. Suba o frontend (`apps/web`) apontando `NEXT_PUBLIC_API_BASE_URL` para a URL do backend.
