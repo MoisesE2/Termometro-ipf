@@ -34,12 +34,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copiar arquivos públicos (no standalone monorepo ficam sob apps/web)
+# Copiar arquivos públicos (suporta layouts diferentes do standalone)
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/public ./apps/web/public
+COPY --from=builder /app/public ./app/public
 
 # Copiar arquivos de build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./app/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
@@ -48,4 +52,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "if [ -f /app/apps/web/server.js ]; then node /app/apps/web/server.js; elif [ -f /app/server.js ]; then node /app/server.js; else echo 'server.js não encontrado em /app nem /app/apps/web'; ls -la /app; ls -la /app/apps || true; exit 1; fi"]
+CMD ["sh", "-c", "if [ -f /app/app/server.js ]; then node /app/app/server.js; elif [ -f /app/apps/web/server.js ]; then node /app/apps/web/server.js; elif [ -f /app/server.js ]; then node /app/server.js; else echo 'server.js não encontrado em /app/app, /app/apps/web ou /app'; ls -la /app; ls -la /app/app || true; ls -la /app/apps || true; exit 1; fi"]
