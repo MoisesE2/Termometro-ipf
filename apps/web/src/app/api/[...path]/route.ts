@@ -6,6 +6,9 @@ function getApiBaseUrl(): string {
   const internal = process.env.API_INTERNAL_URL?.trim().replace(/\/+$/, "");
   if (internal) return internal;
 
+  const publicApi = process.env.NEXT_PUBLIC_API_BASE_URL?.trim().replace(/\/+$/, "");
+  if (publicApi) return publicApi;
+
   // Em produção sem API_INTERNAL_URL, tenta o hostname padrão do serviço Docker
   if (process.env.NODE_ENV === "production") return "http://api:3001";
   return "http://127.0.0.1:3001";
@@ -61,13 +64,15 @@ async function proxyToApi(
 
   let upstream: Response;
   try {
-    upstream = await fetch(targetStr, {
+    const init: RequestInit & { duplex?: "half" } = {
       method,
       headers,
       body: hasBody ? request.body : undefined,
       redirect: "manual",
       cache: "no-store",
-    });
+    };
+    if (hasBody) init.duplex = "half";
+    upstream = await fetch(targetStr, init);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     console.error(`[api-proxy] ${method} ${targetStr} — falha de conexão: ${detail}`);
