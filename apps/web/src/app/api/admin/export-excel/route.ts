@@ -86,7 +86,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const buffer = await createDonationsExcelBuffer(rows, excelOptions);
-    return new NextResponse(buffer, {
+    // Uint8Array é BodyInit nas libs DOM; Buffer sozinho falha no tsc em CI/Docker
+    const body = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type":
