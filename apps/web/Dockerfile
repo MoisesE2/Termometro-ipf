@@ -48,4 +48,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/web/server.js"]
+CMD ["sh", "-c", "if [ -f /app/apps/web/server.js ]; then node /app/apps/web/server.js; elif [ -f /app/server.js ]; then node /app/server.js; else echo 'server.js não encontrado em /app nem /app/apps/web'; ls -la /app; ls -la /app/apps || true; exit 1; fi"]
