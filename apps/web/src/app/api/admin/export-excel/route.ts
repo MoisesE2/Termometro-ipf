@@ -88,8 +88,9 @@ export async function POST(req: NextRequest) {
     const buffer = await createDonationsExcelBuffer(rows, excelOptions);
     const xlsxType =
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    // Blob é BodyInit em qualquer @types; Buffer/Uint8Array quebram o tsc em alguns CI
-    return new NextResponse(new Blob([buffer], { type: xlsxType }), {
+    // Buffer não é BlobPart em TS estrito; copia para Uint8Array (BufferSource válido)
+    const bytes = Uint8Array.from(buffer);
+    return new NextResponse(new Blob([bytes], { type: xlsxType }), {
       status: 200,
       headers: {
         "Content-Type": xlsxType,
