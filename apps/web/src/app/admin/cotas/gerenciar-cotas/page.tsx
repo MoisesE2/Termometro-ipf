@@ -19,6 +19,7 @@ import {
   FaFileDownload,
 } from "react-icons/fa";
 import Link from "next/link";
+import { downloadExportExcelFromApi } from "@/lib/downloadExportExcelClient";
 
 const QUOTA_UNIT_VALUE = 200;
 
@@ -207,7 +208,6 @@ export default function GerenciarCotasPage() {
   const handleExportExcel = async () => {
     setExporting(true);
     try {
-      const { downloadDonationsExcel } = await import("@/lib/exportDonationsExcel");
       const rows = filtered.map((d) => ({
         donorName: d.donorName,
         quotaCount: d.quotaCount,
@@ -218,10 +218,10 @@ export default function GerenciarCotasPage() {
       const suffix = search.trim()
         ? `-filtro-${search.replace(/\s+/g, "-").slice(0, 24)}`
         : "";
-      downloadDonationsExcel(
+      await downloadExportExcelFromApi({
         rows,
-        `Capitalizacao-Cotas-IPF${suffix}-${new Date().toISOString().slice(0, 10)}.xlsx`
-      );
+        filename: `Capitalizacao-Cotas-IPF${suffix}-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      });
       showToast("success", "Arquivo Excel gerado com sucesso.");
     } catch {
       showToast("error", "Não foi possível gerar o Excel.");
@@ -232,11 +232,27 @@ export default function GerenciarCotasPage() {
 
   const handleDownloadTemplate = async () => {
     try {
-      const { downloadEmptyTemplateExcel } = await import("@/lib/exportDonationsExcel");
-      downloadEmptyTemplateExcel();
-      showToast("success", "Modelo baixado. Preencha e use como referência para conferência.");
+      await downloadExportExcelFromApi({
+        template: true,
+        templateKind: "vazio",
+        filename: "Modelo-Cotas-IPF.xlsx",
+      });
+      showToast("success", "Modelo vazio baixado (só layout e títulos).");
     } catch {
       showToast("error", "Não foi possível baixar o modelo.");
+    }
+  };
+
+  const handleDownloadFillTemplate = async () => {
+    try {
+      await downloadExportExcelFromApi({
+        template: true,
+        templateKind: "preenchimento",
+        filename: "Modelo-Preenchimento-Cotas-IPF.xlsx",
+      });
+      showToast("success", "Modelo de preenchimento baixado (linhas para lançar + aba Instruções).");
+    } catch {
+      showToast("error", "Não foi possível baixar o modelo de preenchimento.");
     }
   };
 
@@ -428,10 +444,19 @@ export default function GerenciarCotasPage() {
             type="button"
             onClick={handleDownloadTemplate}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all w-full sm:w-auto min-h-[44px] sm:min-h-0"
-            title="Baixa planilha vazia com o mesmo layout do modelo oficial"
+            title="Apenas cabeçalhos e título — sem linhas de dados"
           >
             <FaFileDownload className="w-3.5 h-3.5" />
             Modelo vazio
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadFillTemplate}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-sm text-[#1F5830] bg-green-50/80 border border-[#1F5830]/25 rounded-xl hover:bg-green-50 transition-all w-full sm:w-auto min-h-[44px] sm:min-h-0"
+            title="30 linhas formatadas para preencher + aba Instruções com orientações"
+          >
+            <FaFileDownload className="w-3.5 h-3.5" />
+            Modelo de preenchimento
           </button>
           <Link
             href="/admin/cotas/registrar-cotas"

@@ -12,6 +12,10 @@ const donationSchema = z.object({
 
 const donationUpdateSchema = donationSchema.partial();
 
+const bulkDonationsSchema = z.object({
+  donations: z.array(donationSchema).min(1).max(500),
+});
+
 export async function donationRoutes(app: FastifyInstance) {
   app.post('/donations', { preHandler: [app.authenticate] }, async (request, reply) => {
     const parse = donationSchema.safeParse(request.body);
@@ -30,6 +34,50 @@ export async function donationRoutes(app: FastifyInstance) {
     });
 
     return reply.code(201).send(created);
+  });
+
+  app.post('/donations/bulk', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const parsed = bulkDonationsSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        message: 'Lista inválida.',
+        errors: parsed.error.flatten(),
+      });
+    }
+    if (!request.userData?.id) return reply.code(401).send({ message: 'Não autenticado.' });
+
+    const { donations } = parsed.data;
+    const failed: { index: number; donorName?: string; message: string }[] = [];
+    let created = 0;
+
+    for (let i = 0; i < donations.length; i++) {
+      const d = donations[i];
+      try {
+        await app.prisma.donation.create({
+          data: {
+            donorName: d.donorName,
+            quotaCount: d.quotaCount,
+            quotaUnitValue: QUOTA_UNIT_VALUE,
+            amountPaid: d.amountPaid,
+            paymentDate: d.paymentDate,
+            createdByAdminId: request.userData.id,
+          },
+        });
+        created += 1;
+      } catch {
+        failed.push({
+          index: i,
+          donorName: d.donorName,
+          message: 'Erro ao gravar no banco.',
+        });
+      }
+    }
+
+    return reply.send({
+      created,
+      failed,
+      total: donations.length,
+    });
   });
 
   app.get('/donations', { preHandler: [app.authenticate] }, async () => {

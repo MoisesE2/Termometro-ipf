@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminTopBar from "@/components/admin/AdminTopBar";
 import { buildApiUrl } from "@/lib/api";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -53,13 +54,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen min-h-[100dvh] bg-gray-50">
       <AdminSidebar />
-      <main
-        className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden
-          pt-[max(4.25rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]
-          lg:pt-0 lg:pb-0"
-      >
-        {children}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AdminTopBar />
+        <main
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

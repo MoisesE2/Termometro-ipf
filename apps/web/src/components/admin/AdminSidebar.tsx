@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   FaChartLine,
   FaTasks,
@@ -13,6 +13,7 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+import { auth } from "@/lib/auth";
 
 const navItems = [
   {
@@ -39,13 +40,14 @@ const navItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    router.push("/auth/login");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("adminUser");
+    }
+    setMobileOpen(false);
+    auth.logout();
   };
 
   const SidebarContent = () => (
@@ -98,14 +100,15 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* Logout */}
+      {/* Logout (duplicado na barra superior para acesso rápido) */}
       <div className="px-3 py-4 border-t border-white/10">
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all duration-200"
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-red-400/60 bg-red-950/30 px-4 py-3 text-sm font-semibold text-red-100 shadow-inner transition-all duration-200 hover:border-red-300 hover:bg-red-900/40 hover:text-white"
         >
-          <FaSignOutAlt className="w-4 h-4" />
-          Sair
+          <FaSignOutAlt className="h-4 w-4 shrink-0" aria-hidden />
+          Sair da conta
         </button>
       </div>
     </div>

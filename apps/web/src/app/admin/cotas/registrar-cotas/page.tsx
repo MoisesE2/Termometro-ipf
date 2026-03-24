@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { buildApiUrl } from "@/lib/api";
+import { downloadExportExcelFromApi } from "@/lib/downloadExportExcelClient";
 import {
   FaUser,
   FaLayerGroup,
@@ -10,6 +11,10 @@ import {
   FaCalendarAlt,
   FaCheckCircle,
   FaExclamationCircle,
+  FaFileExcel,
+  FaUpload,
+  FaFileDownload,
+  FaClipboardCheck,
 } from "react-icons/fa";
 import Link from "next/link";
 
@@ -30,6 +35,23 @@ interface Toast {
   message: string;
 }
 
+type InvalidApiRow = { index: number; donorName: string; errors: string[] };
+
+type ImportSummary = {
+  created: number;
+  failed: { index: number; donorName?: string; message: string }[];
+  total: number;
+  skippedRows: { rowNumber: number; reason: string }[];
+  error?: string;
+  /** Resultado do teste sem gravar */
+  dryRun?: boolean;
+  parsedOkCount?: number;
+  wouldImportCount?: number;
+  invalidApiRows?: InvalidApiRow[];
+  overLimit?: boolean;
+  readyToImport?: boolean;
+};
+
 export default function RegistrarCotaPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
@@ -41,6 +63,11 @@ export default function RegistrarCotaPage() {
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [excelBusyKind, setExcelBusyKind] = useState<"import" | "validate">("import");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const excelActionRef = useRef<"import" | "validate">("import");
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
@@ -144,6 +171,131 @@ export default function RegistrarCotaPage() {
     }
   };
 
+  const handleDownloadFillModel = async () => {
+    try {
+      await downloadExportExcelFromApi({
+        template: true,
+        templateKind: "preenchimento",
+        filename: "Modelo-Preenchimento-Cotas-IPF.xlsx",
+      });
+      showToast("success", "Modelo de preenchimento baixado.");
+    } catch {
+      showToast("error", "Não foi possível baixar o modelo.");
+    }
+  };
+
+  const openExcelPicker = (action: "import" | "validate") => {
+    excelActionRef.current = action;
+    setExcelBusyKind(action);
+    fileInputRef.current?.click();
+  };
+
+  const handleExcelFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const action = excelActionRef.current;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setImporting(true);
+    setImportSummary(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (action === "validate") {
+        fd.append("dryRun", "1");
+      }
+      const res = await fetch("/api/admin/import-donations-excel", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = (await res.json().catch(() => ({}))) as ImportSummary & {
+        message?: string;
+        dryRun?: boolean;
+        parsedOkCount?: number;
+        wouldImportCount?: number;
+        invalidApiRows?: InvalidApiRow[];
+        overLimit?: boolean;
+        readyToImport?: boolean;
+      };
+
+      if (res.status === 401) {
+        localStorage.removeItem("adminToken");
+        router.push("/auth/login");
+        return;
+      }
+
+      if (data.dryRun) {
+        setImportSummary({
+          created: 0,
+          failed: [],
+          total: data.parsedOkCount ?? 0,
+          skippedRows: data.skippedRows ?? [],
+          dryRun: true,
+          parsedOkCount: data.parsedOkCount ?? 0,
+          wouldImportCount: data.wouldImportCount ?? 0,
+          invalidApiRows: data.invalidApiRows ?? [],
+          overLimit: data.overLimit ?? false,
+          readyToImport: data.readyToImport ?? false,
+        });
+        if (data.readyToImport) {
+          showToast(
+            "success",
+            `Teste OK: ${data.wouldImportCount ?? 0} cota(s) pronta(s) para importar (nada foi gravado).`
+          );
+        } else if ((data.parsedOkCount ?? 0) === 0 && (data.skippedRows?.length ?? 0) === 0) {
+          showToast("error", "Nenhuma linha de dados encontrada na planilha.");
+        } else {
+          showToast(
+            "error",
+            "A planilha precisa de ajustes antes de importar — veja o relatório abaixo."
+          );
+        }
+        return;
+      }
+
+      if (!res.ok) {
+        setImportSummary({
+          created: data.created ?? 0,
+          failed: data.failed ?? [],
+          total: data.total ?? 0,
+          skippedRows: data.skippedRows ?? [],
+          error: data.error ?? data.message ?? "Importação falhou.",
+        });
+        showToast("error", data.error ?? data.message ?? "Erro na importação.");
+        return;
+      }
+
+      setImportSummary({
+        created: data.created ?? 0,
+        failed: data.failed ?? [],
+        total: data.total ?? 0,
+        skippedRows: data.skippedRows ?? [],
+      });
+      const n = data.created ?? 0;
+      showToast(
+        "success",
+        n === 1 ? "1 cota importada com sucesso." : `${n} cotas importadas com sucesso.`
+      );
+    } catch {
+      showToast(
+        "error",
+        action === "validate"
+          ? "Erro de rede ao testar a planilha."
+          : "Erro de rede ao importar."
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const quotaCount = parseInt(form.quotaCount, 10);
   const previewAmount =
     form.autoCalc && !isNaN(quotaCount) && quotaCount > 0
@@ -151,7 +303,7 @@ export default function RegistrarCotaPage() {
       : null;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 max-w-2xl mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 max-w-2xl mx-auto space-y-6">
       {/* Toast */}
       {toast && (
         <div
@@ -350,6 +502,210 @@ export default function RegistrarCotaPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Importar Excel */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <FaFileExcel className="w-5 h-5 text-[#1F5830]" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Importar cotas por Excel</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Use a aba <strong className="text-gray-700">Plan1</strong> do modelo: colunas{" "}
+              <strong>B</strong> participante, <strong>C</strong> quantidade de cotas,{" "}
+              <strong>E</strong> valor pago e <strong>F</strong> data do pagamento.               Os dados
+              começam na <strong>linha 5</strong>. No modelo de preenchimento, a primeira linha é um{" "}
+              <strong>exemplo</strong> (nome com{" "}
+              <code className="text-[11px] bg-gray-100 px-1 rounded">[EXEMPLO]</code>) — não entra na
+              importação; substitua ou apague.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4">
+          <button
+            type="button"
+            onClick={handleDownloadFillModel}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-[#1F5830] bg-green-50 border border-[#1F5830]/25 rounded-xl hover:bg-green-100/80 transition-all min-h-[44px]"
+          >
+            <FaFileDownload className="w-4 h-4" />
+            Baixar modelo de preenchimento
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            className="hidden"
+            onChange={handleExcelFile}
+          />
+          <button
+            type="button"
+            disabled={importing}
+            onClick={() => openExcelPicker("validate")}
+            title="Lê o Excel e mostra se há erros — não grava no sistema"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-[#1F5830] bg-white border-2 border-[#1F5830]/35 rounded-xl hover:bg-green-50/80 transition-all disabled:opacity-60 min-h-[44px]"
+          >
+            {importing && excelBusyKind === "validate" ? (
+              <>
+                <div className="w-4 h-4 border-2 border-[#1F5830] border-t-transparent rounded-full animate-spin" />
+                Testando…
+              </>
+            ) : (
+              <>
+                <FaClipboardCheck className="w-4 h-4" />
+                Testar planilha (sem gravar)
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={importing}
+            onClick={() => openExcelPicker("import")}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#1F5830] hover:bg-[#163d22] rounded-xl transition-all disabled:opacity-60 min-h-[44px]"
+          >
+            {importing && excelBusyKind === "import" ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Importando…
+              </>
+            ) : (
+              <>
+                <FaUpload className="w-4 h-4" />
+                Importar para o sistema
+              </>
+            )}
+          </button>
+          <Link
+            href="/admin/cotas/gerenciar-cotas"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 min-h-[44px]"
+          >
+            Ver cotas registradas
+          </Link>
+        </div>
+
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+          Limite: <strong>500 linhas</strong> por arquivo. O valor unitário da cota no sistema
+          continua a ser <strong>R$ {QUOTA_UNIT_VALUE.toFixed(2)}</strong> (a coluna «Valor Cota»
+          no Excel é só referência).
+        </p>
+
+        {importSummary && (
+          <div
+            className={`mt-4 rounded-xl border p-4 text-sm ${
+              importSummary.dryRun
+                ? importSummary.readyToImport
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-950"
+                  : "bg-amber-50 border-amber-200 text-amber-950"
+                : importSummary.error
+                  ? "bg-red-50 border-red-100 text-red-900"
+                  : "bg-green-50 border-green-100 text-green-900"
+            }`}
+          >
+            {importSummary.dryRun ? (
+              <>
+                <p className="font-semibold text-gray-900 flex items-center gap-2">
+                  <FaClipboardCheck className="w-4 h-4 flex-shrink-0" />
+                  Simulação — nada foi gravado no banco
+                </p>
+                <ul className="mt-2 space-y-1 text-gray-800">
+                  <li>
+                    Linhas lidas com sucesso do Excel:{" "}
+                    <strong>{importSummary.parsedOkCount ?? 0}</strong>
+                  </li>
+                  <li>
+                    Linhas que <strong>passariam</strong> na validação da API:{" "}
+                    <strong>{importSummary.wouldImportCount ?? 0}</strong>
+                  </li>
+                  {importSummary.overLimit && (
+                    <li className="text-red-800 font-medium">
+                      Acima do limite de 500 linhas — divida o arquivo antes de importar.
+                    </li>
+                  )}
+                  {(importSummary.invalidApiRows?.length ?? 0) > 0 && (
+                    <li className="text-red-800 font-medium">
+                      {(importSummary.invalidApiRows?.length ?? 0)} linha(s) com problema de
+                      regras (nome, cotas, valor ou data).
+                    </li>
+                  )}
+                </ul>
+                {importSummary.readyToImport && (
+                  <p className="mt-2 text-emerald-900 font-medium">
+                    Pode usar <strong>Importar para o sistema</strong> com o mesmo arquivo.
+                  </p>
+                )}
+              </>
+            ) : importSummary.error ? (
+              <p className="font-medium">{importSummary.error}</p>
+            ) : (
+              <p className="font-medium">
+                Gravadas: {importSummary.created} de {importSummary.total}
+                {importSummary.failed.length > 0 &&
+                  ` · Falhas ao gravar: ${importSummary.failed.length}`}
+              </p>
+            )}
+            {(importSummary.invalidApiRows?.length ?? 0) > 0 && (
+              <details className="mt-2 text-xs text-gray-800 open:mb-0">
+                <summary className="cursor-pointer font-medium">
+                  Detalhe: linhas que falhariam na API (
+                  {importSummary.invalidApiRows?.length ?? 0})
+                </summary>
+                <ul className="mt-2 max-h-40 overflow-y-auto space-y-2 pl-1 list-none">
+                  {importSummary.invalidApiRows?.slice(0, 40).map((row) => (
+                    <li
+                      key={row.index}
+                      className="border-l-2 border-amber-400 pl-2 py-0.5"
+                    >
+                      <span className="font-medium">
+                        Registro #{row.index + 1} — {row.donorName}
+                      </span>
+                      <ul className="list-disc pl-4 mt-0.5 text-gray-700">
+                        {row.errors.map((er) => (
+                          <li key={er}>{er}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                  {(importSummary.invalidApiRows?.length ?? 0) > 40 && (
+                    <li>… e mais {(importSummary.invalidApiRows?.length ?? 0) - 40}</li>
+                  )}
+                </ul>
+              </details>
+            )}
+            {importSummary.skippedRows.length > 0 && (
+              <details className="mt-2 text-xs text-gray-700">
+                <summary className="cursor-pointer font-medium text-gray-800">
+                  Linhas ignoradas na leitura do Excel ({importSummary.skippedRows.length})
+                </summary>
+                <ul className="mt-2 max-h-40 overflow-y-auto space-y-1 pl-4 list-disc">
+                  {importSummary.skippedRows.slice(0, 50).map((s, idx) => (
+                    <li key={`${idx}-L${s.rowNumber}`}>
+                      Linha {s.rowNumber}: {s.reason}
+                    </li>
+                  ))}
+                  {importSummary.skippedRows.length > 50 && (
+                    <li>… e mais {importSummary.skippedRows.length - 50}</li>
+                  )}
+                </ul>
+              </details>
+            )}
+            {!importSummary.dryRun && importSummary.failed.length > 0 && (
+              <details className="mt-2 text-xs text-gray-700">
+                <summary className="cursor-pointer font-medium text-gray-800">
+                  Erros ao gravar na base ({importSummary.failed.length})
+                </summary>
+                <ul className="mt-2 max-h-32 overflow-y-auto space-y-1 pl-4 list-disc">
+                  {importSummary.failed.map((f) => (
+                    <li key={f.index}>
+                      #{f.index + 1} {f.donorName ? `(${f.donorName})` : ""}: {f.message}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

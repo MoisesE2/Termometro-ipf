@@ -1,15 +1,35 @@
 import type { NextConfig } from 'next'
+import path from 'path'
+
+const isProd = process.env.NODE_ENV === 'production'
+
+/** Raiz do monorepo (apps/web → ../..) — alinha tracing/node_modules no dev/build. */
+const monorepoRoot = path.resolve(__dirname, '..', '..')
 
 const nextConfig: NextConfig = {
-  // Configurações mínimas para produção
-  output: 'standalone',
-  // Configuração para evitar problemas com SSR
-  reactStrictMode: true,
-  // Configurações para melhor compatibilidade com Docker
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+  serverExternalPackages: ['exceljs'],
+
+  experimental: {
+    optimizePackageImports: ['react-icons', 'recharts'],
   },
-  // Configurações básicas
+
+  outputFileTracingRoot: monorepoRoot,
+
+  webpack: (config, { dev }) => {
+    if (dev) {
+      // Evita ENOENT em .next/cache/webpack/.../*.pack.gz (cache em disco corrompido no HMR)
+      type WithCache = { cache?: false | object }
+      ;(config as WithCache).cache = false
+    }
+    return config
+  },
+
+  ...(isProd ? { output: 'standalone' as const } : {}),
+
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: isProd,
+  },
   poweredByHeader: false,
   trailingSlash: false,
   async rewrites() {
@@ -22,7 +42,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Configurações de segurança
   async headers() {
     return [
       {
