@@ -23,33 +23,6 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   trailingSlash: false,
-  async rewrites() {
-    const internalApi = process.env.API_INTERNAL_URL?.replace(/\/+$/, '')
-    if (internalApi) {
-      return [
-        {
-          source: '/api/:path*',
-          destination: `${internalApi}/:path*`,
-        },
-      ]
-    }
-
-    // Se a URL pública da API estiver definida, o frontend chama direto essa URL.
-    if (process.env.NEXT_PUBLIC_API_BASE_URL) return []
-
-    // Fallback local apenas para desenvolvimento.
-    if (!isProd) {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://127.0.0.1:3001/:path*',
-        },
-      ]
-    }
-
-    // Em produção sem API_INTERNAL_URL e sem NEXT_PUBLIC_API_BASE_URL, não faz rewrite.
-    return []
-  },
   async headers() {
     return [
       {

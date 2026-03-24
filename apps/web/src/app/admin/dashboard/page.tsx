@@ -133,6 +133,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [yearFilter, setYearFilter] = useState<YearFilter>("2025");
   const [refreshing, setRefreshing] = useState(false);
+  // Guard de mount: gráficos só são renderizados no cliente após hidratação completa
+  // Evita mismatch SSR/CSR que gera React error #418 com recharts + ResponsiveContainer
+  const [isMounted, setIsMounted] = useState(false);
 
   const barChartHeight = isNarrow ? 220 : 280;
   const lineChartHeight = isNarrow ? 190 : 220;
@@ -167,6 +170,7 @@ export default function DashboardPage() {
   );
 
   useEffect(() => {
+    setIsMounted(true);
     loadData();
   }, [loadData]);
 
@@ -286,35 +290,39 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="w-full min-h-0 -mx-1 sm:mx-0">
-            <ResponsiveContainer width="100%" height={barChartHeight}>
-              <BarChart data={monthlyData} barSize={yearFilter === "Todos" ? (isNarrow ? 3 : 4) : isNarrow ? 14 : 20} margin={{ left: isNarrow ? 4 : 8, right: 8, bottom: isNarrow && yearFilter === "Todos" ? 28 : 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis
-                  dataKey="mes"
-                  tick={{
-                    fontSize: isNarrow ? 9 : 11,
-                    fill: "#9ca3af",
-                    ...(isNarrow && yearFilter === "Todos"
-                      ? { angle: -45, textAnchor: "end", height: 48 }
-                      : {}),
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={isNarrow && yearFilter !== "Todos" ? "preserveStartEnd" : 0}
-                />
-                <YAxis
-                  tickFormatter={(v) =>
-                    v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
-                  }
-                  tick={{ fontSize: isNarrow ? 10 : 11, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={isNarrow ? 48 : 55}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="arrecadado" fill="#3FA34D" radius={[6, 6, 0, 0]} name="arrecadado" />
-              </BarChart>
-            </ResponsiveContainer>
+            {isMounted ? (
+              <ResponsiveContainer width="100%" height={barChartHeight}>
+                <BarChart data={monthlyData} barSize={yearFilter === "Todos" ? (isNarrow ? 3 : 4) : isNarrow ? 14 : 20} margin={{ left: isNarrow ? 4 : 8, right: 8, bottom: isNarrow && yearFilter === "Todos" ? 28 : 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <XAxis
+                    dataKey="mes"
+                    tick={{
+                      fontSize: isNarrow ? 9 : 11,
+                      fill: "#9ca3af",
+                      ...(isNarrow && yearFilter === "Todos"
+                        ? { angle: -45, textAnchor: "end", height: 48 }
+                        : {}),
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={isNarrow && yearFilter !== "Todos" ? "preserveStartEnd" : 0}
+                  />
+                  <YAxis
+                    tickFormatter={(v) =>
+                      v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
+                    }
+                    tick={{ fontSize: isNarrow ? 10 : 11, fill: "#9ca3af" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={isNarrow ? 48 : 55}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="arrecadado" fill="#3FA34D" radius={[6, 6, 0, 0]} name="arrecadado" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: barChartHeight }} className="animate-pulse bg-gray-50 rounded-xl" />
+            )}
           </div>
         </div>
 
@@ -326,20 +334,24 @@ export default function DashboardPage() {
           <p className="text-[11px] sm:text-xs text-gray-400 mb-4 sm:mb-6 self-start">Meta total: {formatBRL(META_TOTAL)}</p>
 
           <div className="relative w-full max-w-[200px] mx-auto">
-            <ResponsiveContainer width="100%" height={radialSize}>
-              <RadialBarChart
-                cx="50%"
-                cy="50%"
-                innerRadius={isNarrow ? 58 : 65}
-                outerRadius={isNarrow ? 80 : 90}
-                data={radialData}
-                startAngle={90}
-                endAngle={-270}
-              >
-                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                <RadialBar dataKey="value" background={{ fill: "#f0fdf4" }} cornerRadius={10} />
-              </RadialBarChart>
-            </ResponsiveContainer>
+            {isMounted ? (
+              <ResponsiveContainer width="100%" height={radialSize}>
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={isNarrow ? 58 : 65}
+                  outerRadius={isNarrow ? 80 : 90}
+                  data={radialData}
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                  <RadialBar dataKey="value" background={{ fill: "#f0fdf4" }} cornerRadius={10} />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: radialSize }} className="animate-pulse bg-gray-50 rounded-full" />
+            )}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-2xl sm:text-3xl font-bold text-[#1F5830]">{percentage.toFixed(1)}%</span>
               <span className="text-[11px] sm:text-xs text-gray-400 mt-1">da meta</span>
@@ -368,44 +380,48 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="w-full min-h-0 -mx-1 sm:mx-0">
-          <ResponsiveContainer width="100%" height={lineChartHeight}>
-            <LineChart data={monthlyData} margin={{ left: isNarrow ? 0 : 4, right: 8, bottom: isNarrow && yearFilter === "Todos" ? 24 : 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis
-                dataKey="mes"
-                tick={{
-                  fontSize: isNarrow ? 9 : 11,
-                  fill: "#9ca3af",
-                  ...(isNarrow && yearFilter === "Todos"
-                    ? { angle: -45, textAnchor: "end", height: 44 }
-                    : {}),
-                }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: isNarrow ? 10 : 11, fill: "#9ca3af" }}
-                axisLine={false}
-                tickLine={false}
-                width={isNarrow ? 28 : 35}
-                allowDecimals={false}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                formatter={() => "Cotas registradas"}
-                wrapperStyle={{ fontSize: isNarrow ? 11 : 12, paddingTop: 8 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="cotas"
-                stroke="#1F5830"
-                strokeWidth={isNarrow ? 2 : 2.5}
-                dot={{ fill: "#1F5830", strokeWidth: 0, r: isNarrow ? 3 : 4 }}
-                activeDot={{ r: isNarrow ? 5 : 6 }}
-                name="cotas"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {isMounted ? (
+            <ResponsiveContainer width="100%" height={lineChartHeight}>
+              <LineChart data={monthlyData} margin={{ left: isNarrow ? 0 : 4, right: 8, bottom: isNarrow && yearFilter === "Todos" ? 24 : 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis
+                  dataKey="mes"
+                  tick={{
+                    fontSize: isNarrow ? 9 : 11,
+                    fill: "#9ca3af",
+                    ...(isNarrow && yearFilter === "Todos"
+                      ? { angle: -45, textAnchor: "end", height: 44 }
+                      : {}),
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: isNarrow ? 10 : 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={isNarrow ? 28 : 35}
+                  allowDecimals={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  formatter={() => "Cotas registradas"}
+                  wrapperStyle={{ fontSize: isNarrow ? 11 : 12, paddingTop: 8 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="cotas"
+                  stroke="#1F5830"
+                  strokeWidth={isNarrow ? 2 : 2.5}
+                  dot={{ fill: "#1F5830", strokeWidth: 0, r: isNarrow ? 3 : 4 }}
+                  activeDot={{ r: isNarrow ? 5 : 6 }}
+                  name="cotas"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ height: lineChartHeight }} className="animate-pulse bg-gray-50 rounded-xl" />
+          )}
         </div>
       </div>
 
