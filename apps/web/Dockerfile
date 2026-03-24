@@ -34,12 +34,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copiar arquivos públicos
-COPY --from=builder /app/public ./public
+# Copiar arquivos públicos (no standalone monorepo ficam sob apps/web)
+COPY --from=builder /app/public ./apps/web/public
 
 # Copiar arquivos de build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./apps/web/.next/static
 
 USER nextjs
 
@@ -48,4 +48,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"] 
+CMD ["node", "apps/web/server.js"]
