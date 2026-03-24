@@ -67,7 +67,8 @@ const Header: React.FC<HeaderProps> = () => {
                 alt="Logo Termômetro IPF"
                 width={36}
                 height={36}
-                className="sm:w-10 sm:h-10 lg:w-12 lg:h-12"
+                className="sm:w-10 lg:w-12"
+                style={{ height: "auto" }}
                 priority
               />
               <span className="hidden sm:block text-base lg:text-lg font-medium text-slate-700">
