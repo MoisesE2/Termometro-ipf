@@ -86,13 +86,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const buffer = await createDonationsExcelBuffer(rows, excelOptions);
-    // Uint8Array é BodyInit nas libs DOM; Buffer sozinho falha no tsc em CI/Docker
-    const body = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    return new NextResponse(body, {
+    const xlsxType =
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    // Blob é BodyInit em qualquer @types; Buffer/Uint8Array quebram o tsc em alguns CI
+    return new NextResponse(new Blob([buffer], { type: xlsxType }), {
       status: 200,
       headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Type": xlsxType,
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-store",
       },
