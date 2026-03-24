@@ -15,15 +15,6 @@ const nextConfig: NextConfig = {
 
   outputFileTracingRoot: monorepoRoot,
 
-  webpack: (config, { dev }) => {
-    if (dev) {
-      // Evita ENOENT em .next/cache/webpack/.../*.pack.gz (cache em disco corrompido no HMR)
-      type WithCache = { cache?: false | object }
-      ;(config as WithCache).cache = false
-    }
-    return config
-  },
-
   ...(isProd ? { output: 'standalone' as const } : {}),
 
   reactStrictMode: true,
