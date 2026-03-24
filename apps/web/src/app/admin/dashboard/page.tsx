@@ -133,6 +133,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [yearFilter, setYearFilter] = useState<YearFilter>("2025");
   const [refreshing, setRefreshing] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   // Guard de mount: gráficos só são renderizados no cliente após hidratação completa
   // Evita mismatch SSR/CSR que gera React error #418 com recharts + ResponsiveContainer
   const [isMounted, setIsMounted] = useState(false);
@@ -149,6 +150,7 @@ export default function DashboardPage() {
       const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
       if (!token) { router.push("/auth/login"); return; }
 
+      setApiError(null);
       try {
         const [statsRes, donationsRes] = await Promise.all([
           fetch(buildApiUrl("/stats/summary")),
@@ -157,10 +159,16 @@ export default function DashboardPage() {
           }),
         ]);
 
-        if (statsRes.ok) setStats(await statsRes.json());
+        if (statsRes.ok) {
+          setStats(await statsRes.json());
+        } else {
+          const body = await statsRes.text().catch(() => "");
+          setApiError(`Erro ${statsRes.status} ao buscar resumo: ${body.slice(0, 200)}`);
+        }
         if (donationsRes.ok) setDonations(await donationsRes.json());
-      } catch {
-        // silently fail — data stays as is
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setApiError(`Falha de rede ao conectar à API: ${msg}`);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -199,6 +207,17 @@ export default function DashboardPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 space-y-5 sm:space-y-8 max-w-7xl mx-auto">
+      {/* Banner de erro de API */}
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-mono break-all">
+          <strong className="block mb-1">Erro ao carregar dados da API:</strong>
+          {apiError}
+          <span className="block mt-2 text-xs text-red-500">
+            Acesse <code>/api/proxy-health</code> para diagnóstico de conectividade.
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
