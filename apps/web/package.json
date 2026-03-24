@@ -5,8 +5,8 @@
   "scripts": {
     "clean": "rm -rf .next",
     "clean:cache": "rm -rf .next/cache",
-    "dev": "NODE_OPTIONS= next dev --turbopack",
-    "dev:fresh": "npm run clean && NODE_OPTIONS= next dev --turbopack",
+    "dev": "mkdir -p .next/static/development && NODE_OPTIONS= next dev --turbopack",
+    "dev:fresh": "npm run clean && mkdir -p .next/static/development && NODE_OPTIONS= next dev --turbopack",
     "dev:webpack": "NODE_OPTIONS= next dev",
     "build": "next build",
     "build:prod": "SKIP_ENV_VALIDATION=true next build",

@@ -35,9 +35,19 @@ export default function AdminLoginPage() {
         }),
       });
 
+      if (res.status === 502) {
+        let detail = "";
+        try {
+          const body = await res.json();
+          detail = body.detail ? ` (${body.detail})` : body.message ? ` — ${body.message}` : "";
+        } catch { /* noop */ }
+        setErrorMessage(`Servidor de API inacessível${detail}. Verifique a configuração em /api/proxy-health`);
+        return;
+      }
+
       const contentType = res.headers.get("content-type") ?? "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Resposta inválida da API.");
+        throw new Error(`Resposta inválida da API (status ${res.status}).`);
       }
 
       const data = await res.json();
@@ -184,7 +194,8 @@ export default function AdminLoginPage() {
             </form>
           </div>
 
-          <p className="text-center text-gray-400 text-xs mt-6">
+          {/* suppressHydrationWarning evita React #418: getFullYear() varia entre SSR e hidratação */}
+          <p className="text-center text-gray-400 text-xs mt-6" suppressHydrationWarning>
             © {new Date().getFullYear()} Igreja Presbiteriana do Farol
           </p>
         </div>

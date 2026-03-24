@@ -13,9 +13,12 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['react-icons', 'recharts'],
   },
 
-  outputFileTracingRoot: monorepoRoot,
-
-  ...(isProd ? { output: 'standalone' as const } : {}),
+  ...(isProd
+    ? {
+        output: 'standalone' as const,
+        outputFileTracingRoot: monorepoRoot,
+      }
+    : {}),
 
   reactStrictMode: true,
   compiler: {
