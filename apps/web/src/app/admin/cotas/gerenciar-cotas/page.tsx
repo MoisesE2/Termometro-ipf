@@ -22,6 +22,7 @@ import Link from "next/link";
 import { downloadExportExcelFromApi } from "@/lib/downloadExportExcelClient";
 
 const QUOTA_UNIT_VALUE = 200;
+const CAMPAIGN_START_DATE = "2025-06-01";
 
 interface Donation {
   id: string;
@@ -380,6 +381,7 @@ export default function GerenciarCotasPage() {
                   <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
                   <input
                     type="date"
+                    min={CAMPAIGN_START_DATE}
                     max="2027-12-31"
                     value={editForm.paymentDate}
                     onChange={(e) => setEditForm((p) => p ? { ...p, paymentDate: e.target.value } : null)}

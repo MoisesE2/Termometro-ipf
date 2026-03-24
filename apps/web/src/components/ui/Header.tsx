@@ -54,39 +54,39 @@ const Header: React.FC<HeaderProps> = () => {
 
   return (
     <>
-      <header className={`bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 p-2 sm:p-3 lg:px-4 sticky top-0 z-50 transition-transform duration-300 ease-in-out ${
+      <header className={`sticky top-0 z-50 border-b border-slate-200/80 bg-white/92 backdrop-blur-md transition-transform duration-300 ease-in-out ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}>
-        <div className="container mx-auto flex justify-between items-center max-w-7xl">
+        <div className="container mx-auto flex h-14 sm:h-16 justify-between items-center max-w-7xl px-3 sm:px-4 lg:px-6">
           {/* Logo/Título - Lado Esquerdo */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity duration-200">
               {/* Usando a imagem do public/assets */}
               <Image
                 src="/assets/CRUZ.png"
                 alt="Logo Termômetro IPF"
                 width={36}
                 height={36}
-                className="sm:w-10 lg:w-12"
+                className="w-8 sm:w-9 lg:w-10 drop-shadow-sm"
                 style={{ height: "auto" }}
                 priority
               />
-              <span className="hidden sm:block text-base lg:text-lg font-medium text-slate-700">
+              <span className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 tracking-tight">
                 Termômetro IPF
               </span>
             </Link>
           </div>
 
           {/* Navegação e Botões de Autenticação - Lado Direito */}
-          <nav className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+          <nav className="flex items-center gap-1.5 sm:gap-2.5 lg:gap-4">
             {/* Botão do Terreno */}
             <button
               onClick={() => setShowTerreno(true)}
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-[#1F5830] hover:bg-[#163d22] text-white rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
               aria-label="Ver imagem do terreno"
               title="Ver imagem do terreno"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </button>
@@ -94,39 +94,35 @@ const Header: React.FC<HeaderProps> = () => {
             {/* Link para a Página Principal */}
             <Link
               href="/"
-              className="text-slate-600 hover:text-[#0F4D2E] transition-colors duration-200 text-sm sm:text-base font-normal px-2 py-1 rounded-md hover:bg-slate-50"
+              className="text-slate-600 hover:text-[#0F4D2E] transition-colors duration-200 text-sm font-medium px-2.5 py-1.5 rounded-lg hover:bg-slate-100"
             >
-              <span className="hidden sm:inline">Início</span>
-              <span className="sm:hidden text-xs">Início</span>
+              Início
             </Link>
 
             {/* Botões de Login/Painel Admin/Logout (Renderização Condicional Simulada) */}
             {isLoggedIn ? (
               // Se logado como admin
-              <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
                 <Link
                   href="/admin/dashboard"
-                  className="text-slate-600 hover:text-slate-800 transition-colors duration-200 text-sm sm:text-base font-normal px-2 py-1 rounded-md hover:bg-slate-50"
+                  className="text-slate-600 hover:text-slate-800 transition-colors duration-200 text-sm font-medium px-2.5 py-1.5 rounded-lg hover:bg-slate-100"
                 >
-                  <span className="hidden sm:inline">Painel</span>
-                  <span className="sm:hidden text-xs">Painel</span>
+                  Painel
                 </Link>
                 <button
                   onClick={handleLogoutClick}
-                  className="px-2 py-1 sm:px-3 sm:py-2 bg-transparent border border-slate-200 text-slate-500 rounded-md hover:bg-slate-50 hover:text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all duration-200 text-xs sm:text-sm font-normal"
+                  className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-transparent border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all duration-200 text-sm font-medium"
                 >
-                  <span className="hidden sm:inline">Sair</span>
-                  <span className="sm:hidden text-xs">Sair</span>
+                  Sair
                 </button>
               </div>
             ) : (
               // Se não logado
               <button 
                 onClick={handleLoginClick}
-                className="px-2 py-1 sm:px-3 sm:py-2 bg-transparent border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 hover:text-slate-800 transition-all duration-200 text-xs sm:text-sm font-normal"
+                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-transparent border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 text-sm font-medium"
               >
-                <span className="hidden sm:inline">Entrar</span>
-                <span className="sm:hidden text-xs">Entrar</span>
+                Entrar
               </button>
             )}
           </nav>

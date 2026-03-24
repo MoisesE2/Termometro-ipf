@@ -19,6 +19,12 @@ import {
 import Link from "next/link";
 
 const QUOTA_UNIT_VALUE = 200;
+const CAMPAIGN_START_DATE = "2025-06-01";
+
+function getDefaultPaymentDate(): string {
+  const today = new Date().toISOString().split("T")[0];
+  return today < CAMPAIGN_START_DATE ? CAMPAIGN_START_DATE : today;
+}
 
 interface FormState {
   donorName: string;
@@ -58,7 +64,7 @@ export default function RegistrarCotaPage() {
     donorName: "",
     quotaCount: "",
     amountPaid: "",
-    paymentDate: new Date().toISOString().split("T")[0],
+    paymentDate: getDefaultPaymentDate(),
     autoCalc: true,
   });
   const [loading, setLoading] = useState(false);
@@ -159,7 +165,7 @@ export default function RegistrarCotaPage() {
         donorName: "",
         quotaCount: "",
         amountPaid: "",
-        paymentDate: new Date().toISOString().split("T")[0],
+        paymentDate: getDefaultPaymentDate(),
         autoCalc: true,
       });
 
@@ -435,6 +441,7 @@ export default function RegistrarCotaPage() {
               <input
                 type="date"
                 required
+                min={CAMPAIGN_START_DATE}
                 max="2027-12-31"
                 value={form.paymentDate}
                 onChange={(e) => setForm((p) => ({ ...p, paymentDate: e.target.value }))}

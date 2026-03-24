@@ -318,7 +318,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 text-slate-400 text-base">
               <span className="font-medium text-slate-600">Feito para a Glória de Deus</span>
               <span className="hidden sm:inline text-slate-300">&middot;</span>
-              <span>&copy; 2024 IPF - Todos os direitos reservados</span>
+              <span>&copy; 2025 IPF - Todos os direitos reservados</span>
             </div>
           </div>
         </div>

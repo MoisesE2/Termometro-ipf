@@ -73,19 +73,22 @@ function KpiCard({ title, value, subtitle, icon, color, bgColor }: KpiCardProps)
   );
 }
 
-const YEAR_FILTERS = ["2024", "2025", "2026", "2027", "Todos"] as const;
+const YEAR_FILTERS = ["2025", "2026", "2027", "Todos"] as const;
 type YearFilter = (typeof YEAR_FILTERS)[number];
 
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const CAMPAIGN_START = { year: 2025, month: 6 } as const; // início em 01/06/2025
 
 function buildMonthlyData(donations: Donation[], yearFilter: YearFilter) {
   const map: Record<string, { mes: string; arrecadado: number; cotas: number }> = {};
 
   const yearsToShow =
-    yearFilter === "Todos" ? ["2024", "2025", "2026", "2027"] : [yearFilter];
+    yearFilter === "Todos" ? ["2025", "2026", "2027"] : [yearFilter];
 
   yearsToShow.forEach((year) => {
     MONTHS.forEach((mes, i) => {
+      // Em 2025, só considera de junho em diante.
+      if (year === String(CAMPAIGN_START.year) && i + 1 < CAMPAIGN_START.month) return;
       const key = `${year}-${String(i + 1).padStart(2, "0")}`;
       map[key] = { mes: yearFilter === "Todos" ? `${mes}/${year.slice(2)}` : mes, arrecadado: 0, cotas: 0 };
     });
@@ -223,7 +226,7 @@ export default function DashboardPage() {
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Dashboard</h1>
           <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
-            Acompanhe em tempo real o progresso da meta
+            Acompanhe em tempo real o progresso da meta (início em 01/06/2025)
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">

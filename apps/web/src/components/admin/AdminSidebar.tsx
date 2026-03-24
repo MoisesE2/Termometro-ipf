@@ -100,7 +100,7 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* Logout (duplicado na barra superior para acesso rápido) */}
+      {/* Logout */}
       <div className="px-3 py-4 border-t border-white/10">
         <button
           type="button"
@@ -120,9 +120,10 @@ export default function AdminSidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed z-[60] lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl bg-[#1F5830] text-white shadow-lg active:scale-95 transition-transform
+        className={`fixed z-[60] lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl bg-[#1F5830] text-white shadow-lg active:scale-95 transition-all
           top-[max(0.75rem,env(safe-area-inset-top))]
-          left-[max(0.75rem,env(safe-area-inset-left))]"
+          left-[max(0.75rem,env(safe-area-inset-left))]
+          ${mobileOpen ? "opacity-0 pointer-events-none -translate-x-1" : "opacity-100"}`}
         aria-label="Abrir menu"
         aria-expanded={mobileOpen}
       >
@@ -140,7 +141,7 @@ export default function AdminSidebar() {
 
       {/* Mobile drawer — largura máxima confortável + scroll interno */}
       <aside
-        className={`fixed inset-y-0 left-0 z-[56] w-[min(18rem,100vw-2rem)] max-w-[min(18rem,calc(100vw-env(safe-area-inset-left)-env(safe-area-inset-right)))] bg-gradient-to-b from-[#1F5830] to-[#163d22] shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto overscroll-contain ${
+        className={`fixed inset-y-0 left-0 z-[56] w-[min(19rem,100vw-1rem)] max-w-[min(19rem,calc(100vw-env(safe-area-inset-left)-env(safe-area-inset-right)))] bg-gradient-to-b from-[#1F5830] to-[#163d22] shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto overscroll-contain ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
