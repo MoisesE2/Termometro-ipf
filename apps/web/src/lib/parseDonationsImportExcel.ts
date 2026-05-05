@@ -1,6 +1,8 @@
 import type { Cell } from "exceljs";
 import { IMPORT_SKIP_DONOR_NAME_PREFIX } from "@/lib/excelImportConstants";
 
+const QUOTA_DECIMAL_SCALE = 10;
+
 export type ParsedDonationForApi = {
   donorName: string;
   quotaCount: number;
@@ -41,6 +43,14 @@ function cellNumber(cell: Cell | undefined): number | null {
   const v = cell.value;
   if (typeof v === "number" && Number.isFinite(v)) return v;
   return parseNumberLoose(cellText(cell));
+}
+
+function roundQuotaCount(value: number): number {
+  return Math.round(value * QUOTA_DECIMAL_SCALE) / QUOTA_DECIMAL_SCALE;
+}
+
+function isValidQuotaCount(value: number): boolean {
+  return Number.isFinite(value) && value > 0 && Math.abs(value * QUOTA_DECIMAL_SCALE - Math.round(value * QUOTA_DECIMAL_SCALE)) < 1e-9;
 }
 
 function parsePaymentDate(cell: Cell | undefined): string | null {
@@ -111,8 +121,8 @@ export async function parseDonationsImportExcelBuffer(
     const quotaFloat = cellNumber(row.getCell(3));
     const amountPaid = cellNumber(row.getCell(5));
     const quotaCount =
-      quotaFloat !== null && Number.isInteger(quotaFloat) && quotaFloat > 0
-        ? quotaFloat
+      quotaFloat !== null && isValidQuotaCount(roundQuotaCount(quotaFloat))
+        ? roundQuotaCount(quotaFloat)
         : null;
     const paymentDate = parsePaymentDate(row.getCell(6));
 
@@ -120,7 +130,7 @@ export async function parseDonationsImportExcelBuffer(
       const hint = qcRaw || (quotaFloat !== null ? String(quotaFloat) : "");
       skippedRows.push({
         rowNumber: r,
-        reason: `Quantidade de cotas inválida (use número inteiro > 0): "${hint}"`,
+        reason: `Quantidade de cotas inválida (use número decimal > 0 com até 1 casa): "${hint}"`,
       });
       continue;
     }

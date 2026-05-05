@@ -19,7 +19,20 @@ import {
 import Link from "next/link";
 
 const QUOTA_UNIT_VALUE = 200;
+const QUOTA_DECIMAL_SCALE = 10;
 const CAMPAIGN_START_DATE = "2025-06-01";
+
+function roundQuotaCount(value: number): number {
+  return Math.round(value * QUOTA_DECIMAL_SCALE) / QUOTA_DECIMAL_SCALE;
+}
+
+function isValidQuotaCount(value: number): boolean {
+  return Number.isFinite(value) && value > 0 && Math.abs(value * QUOTA_DECIMAL_SCALE - Math.round(value * QUOTA_DECIMAL_SCALE)) < 1e-9;
+}
+
+function formatQuotaCount(value: number): string {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
 
 function getDefaultPaymentDate(): string {
   const today = new Date().toISOString().split("T")[0];
@@ -81,12 +94,13 @@ export default function RegistrarCotaPage() {
   };
 
   const handleQuotaCountChange = (value: string) => {
-    const count = parseInt(value, 10);
+    const count = Number.parseFloat(value);
+    const normalizedCount = roundQuotaCount(count);
     setForm((prev) => ({
       ...prev,
       quotaCount: value,
-      amountPaid: prev.autoCalc && !isNaN(count) && count > 0
-        ? String(count * QUOTA_UNIT_VALUE)
+      amountPaid: prev.autoCalc && isValidQuotaCount(normalizedCount)
+        ? String(normalizedCount * QUOTA_UNIT_VALUE)
         : prev.amountPaid,
     }));
   };
@@ -96,12 +110,13 @@ export default function RegistrarCotaPage() {
   };
 
   const handleAutoCalcToggle = (checked: boolean) => {
-    const count = parseInt(form.quotaCount, 10);
+    const count = Number.parseFloat(form.quotaCount);
+    const normalizedCount = roundQuotaCount(count);
     setForm((prev) => ({
       ...prev,
       autoCalc: checked,
-      amountPaid: checked && !isNaN(count) && count > 0
-        ? String(count * QUOTA_UNIT_VALUE)
+      amountPaid: checked && isValidQuotaCount(normalizedCount)
+        ? String(normalizedCount * QUOTA_UNIT_VALUE)
         : prev.amountPaid,
     }));
   };
@@ -118,11 +133,11 @@ export default function RegistrarCotaPage() {
       return;
     }
 
-    const quotaCount = parseInt(form.quotaCount, 10);
+    const quotaCount = roundQuotaCount(Number.parseFloat(form.quotaCount));
     const amountPaid = parseFloat(form.amountPaid);
 
-    if (isNaN(quotaCount) || quotaCount <= 0) {
-      showToast("error", "Quantidade de cotas inválida.");
+    if (!isValidQuotaCount(quotaCount)) {
+      showToast("error", "Quantidade de cotas inválida. Use valor positivo com 1 casa decimal.");
       setLoading(false);
       return;
     }
@@ -302,9 +317,9 @@ export default function RegistrarCotaPage() {
     }
   };
 
-  const quotaCount = parseInt(form.quotaCount, 10);
+  const quotaCount = roundQuotaCount(Number.parseFloat(form.quotaCount));
   const previewAmount =
-    form.autoCalc && !isNaN(quotaCount) && quotaCount > 0
+    form.autoCalc && isValidQuotaCount(quotaCount)
       ? quotaCount * QUOTA_UNIT_VALUE
       : null;
 
@@ -374,11 +389,11 @@ export default function RegistrarCotaPage() {
               <input
                 type="number"
                 required
-                min={1}
-                step={1}
+                min={0.1}
+                step={0.1}
                 value={form.quotaCount}
                 onChange={(e) => handleQuotaCountChange(e.target.value)}
-                placeholder="Ex: 3"
+                placeholder="Ex: 3.5"
                 className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3FA34D] focus:border-transparent bg-gray-50 focus:bg-white transition-all"
               />
             </div>
@@ -426,7 +441,7 @@ export default function RegistrarCotaPage() {
             </div>
             {previewAmount !== null && (
               <p className="text-xs text-green-600 mt-1.5 font-medium">
-                = R$ {previewAmount.toLocaleString("pt-BR")} ({quotaCount} × R$ {QUOTA_UNIT_VALUE})
+                = R$ {previewAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({formatQuotaCount(quotaCount)} × R$ {QUOTA_UNIT_VALUE})
               </p>
             )}
           </div>
@@ -461,7 +476,9 @@ export default function RegistrarCotaPage() {
                 </p>
                 <p>
                   <span className="text-gray-500">Cotas:</span>{" "}
-                  <span className="font-medium">{form.quotaCount}</span>
+                  <span className="font-medium">
+                    {isValidQuotaCount(quotaCount) ? formatQuotaCount(quotaCount) : form.quotaCount}
+                  </span>
                 </p>
                 <p>
                   <span className="text-gray-500">Valor:</span>{" "}

@@ -45,7 +45,7 @@ export type ExcelBuildOptions = {
 
 const EXAMPLE_FILLER_ROW: DonationExcelRow = {
   donorName: `${IMPORT_SKIP_DONOR_NAME_PREFIX} Maria Silva — substitua ou apague esta linha`,
-  quotaCount: 2,
+  quotaCount: 2.0,
   quotaUnitValue: 200,
   amountPaid: 400,
   paymentDate: "2026-03-15",
@@ -72,7 +72,7 @@ function styleDataRow(
   row.getCell(6).value = values.dt;
   row.getCell(7).value = "";
 
-  row.getCell(3).numFmt = "0";
+  row.getCell(3).numFmt = "0.0";
   row.getCell(4).numFmt = '"R$" #,##0.00';
   row.getCell(5).numFmt = '"R$" #,##0.00';
   row.getCell(6).numFmt = "dd/mm/yyyy";
@@ -109,7 +109,7 @@ function addInstructionsSheet(wb: Workbook) {
     'Use a aba "Plan1" para lançar as doações. Preencha a partir da linha 5 (abaixo dos títulos em verde).',
     "",
     "• PARTICIPANTES — Nome completo do doador.",
-    "• Quant. COTAS — Número inteiro de cotas adquiridas.",
+    "• Quant. COTAS — Número de cotas com até 1 casa decimal (ex.: 1,5).",
     "• Valor Cota — Valor unitário de cada cota em reais (ex.: 200).",
     "• Valor Pago — Valor total pago (geralmente cotas × valor da cota).",
     "• Data Pagamento — Informe como data no Excel (dd/mm/aaaa). Pode usar a coluna de data ou formato numérico do Excel.",

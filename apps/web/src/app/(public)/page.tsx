@@ -70,7 +70,7 @@ export default function Home() {
         }
       }
       
-      cotasParaEtapa = Math.ceil(valorParaEtapa / valorCota);
+      cotasParaEtapa = valorParaEtapa / valorCota;
     }
     
     return {
@@ -90,6 +90,9 @@ export default function Home() {
       currency: 'BRL',
     }).format(value);
   };
+
+  const formatQuotaCount = (value: number) =>
+    value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
   // Evitar mismatch de hidratação com data/hora
   const [nowStr, setNowStr] = useState<string>('');
@@ -234,7 +237,7 @@ export default function Home() {
                     Cotas
                   </h3>
                   <p className="text-lg md:text-xl font-bold text-slate-800 text-center break-words">
-                    {meta.cotasArrecadadas} / {Math.floor(meta.cotasTotal).toLocaleString()}
+                    {formatQuotaCount(meta.cotasArrecadadas)} / {formatQuotaCount(meta.cotasTotal)}
                   </p>
               </div>
 

@@ -111,6 +111,9 @@ function buildMonthlyData(donations: Donation[], yearFilter: YearFilter) {
 const formatBRL = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+const formatQuotaCount = (value: number) =>
+  value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -121,7 +124,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p key={i} style={{ color: p.color }} className="font-medium">
           {p.name === "arrecadado"
             ? `Arrecadado: ${formatBRL(p.value)}`
-            : `Cotas: ${p.value}`}
+            : `Cotas: ${formatQuotaCount(p.value)}`}
         </p>
       ))}
     </div>
@@ -189,7 +192,7 @@ export default function DashboardPage() {
   const totalQuotas = stats?.totalQuotas ?? 0;
   const percentage = Math.min((totalReceived / META_TOTAL) * 100, 100);
   const remaining = Math.max(META_TOTAL - totalReceived, 0);
-  const remainingQuotas = Math.max(Math.ceil(remaining / QUOTA_VALUE), 0);
+  const remainingQuotas = Math.max(remaining / QUOTA_VALUE, 0);
 
   const monthlyData = buildMonthlyData(donations, yearFilter);
 
@@ -261,8 +264,8 @@ export default function DashboardPage() {
         />
         <KpiCard
           title="Cotas Registradas"
-          value={String(totalQuotas)}
-          subtitle={`de ${(META_TOTAL / QUOTA_VALUE).toLocaleString("pt-BR")} cotas`}
+          value={formatQuotaCount(totalQuotas)}
+          subtitle={`de ${formatQuotaCount(META_TOTAL / QUOTA_VALUE)} cotas`}
           icon={<FaUsers className="w-5 h-5" />}
           color="text-blue-600"
           bgColor="bg-blue-50"
@@ -277,7 +280,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           title="Cotas Restantes"
-          value={remainingQuotas.toLocaleString("pt-BR")}
+          value={formatQuotaCount(remainingQuotas)}
           subtitle={`${formatBRL(remaining)} restantes`}
           icon={<FaFlag className="w-5 h-5" />}
           color="text-orange-600"
@@ -423,7 +426,6 @@ export default function DashboardPage() {
                   axisLine={false}
                   tickLine={false}
                   width={isNarrow ? 28 : 35}
-                  allowDecimals={false}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
@@ -474,7 +476,7 @@ export default function DashboardPage() {
                   <td className="py-3 font-medium text-gray-800">{d.donorName}</td>
                   <td className="py-3">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                      {d.quotaCount}x
+                      {formatQuotaCount(Number(d.quotaCount))}x
                     </span>
                   </td>
                   <td className="py-3 text-gray-700">{formatBRL(Number(d.amountPaid))}</td>

@@ -47,6 +47,9 @@ function StatCard({ icon, label, value, sub, iconBg, iconColor }: StatCardProps)
 const formatBRL = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+const formatQuotaCount = (value: number) =>
+  value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
 export default function GestaoMetaPage() {
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +90,7 @@ export default function GestaoMetaPage() {
   const totalQuotas = data?.totalQuotas ?? 0;
   const percentage = Math.min((totalReceived / META_TOTAL) * 100, 100);
   const remaining = Math.max(META_TOTAL - totalReceived, 0);
-  const remainingQuotas = Math.max(Math.ceil(remaining / QUOTA_VALUE), 0);
+  const remainingQuotas = Math.max(remaining / QUOTA_VALUE, 0);
   const totalQuotaSlots = META_TOTAL / QUOTA_VALUE;
 
   // Stage breakdown (matching home page logic)
@@ -173,8 +176,8 @@ export default function GestaoMetaPage() {
         <StatCard
           icon={<FaLayerGroup className="w-5 h-5" />}
           label="Cotas Registradas"
-          value={String(totalQuotas)}
-          sub={`de ${totalQuotaSlots.toLocaleString("pt-BR")} cotas`}
+          value={formatQuotaCount(totalQuotas)}
+          sub={`de ${formatQuotaCount(totalQuotaSlots)} cotas`}
           iconBg="bg-blue-50"
           iconColor="text-blue-600"
         />
@@ -190,7 +193,7 @@ export default function GestaoMetaPage() {
           icon={<FaFlag className="w-5 h-5" />}
           label="Restante"
           value={formatBRL(remaining)}
-          sub={`${remainingQuotas.toLocaleString("pt-BR")} cotas restantes`}
+          sub={`${formatQuotaCount(remainingQuotas)} cotas restantes`}
           iconBg="bg-orange-50"
           iconColor="text-orange-600"
         />
@@ -275,9 +278,9 @@ export default function GestaoMetaPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {[
             { label: "Valor da cota", value: formatBRL(QUOTA_VALUE) },
-            { label: "Total de vagas", value: `${totalQuotaSlots.toLocaleString("pt-BR")} cotas` },
-            { label: "Vagas preenchidas", value: `${totalQuotas.toLocaleString("pt-BR")} cotas` },
-            { label: "Vagas restantes", value: `${remainingQuotas.toLocaleString("pt-BR")} cotas` },
+            { label: "Total de vagas", value: `${formatQuotaCount(totalQuotaSlots)} cotas` },
+            { label: "Vagas preenchidas", value: `${formatQuotaCount(totalQuotas)} cotas` },
+            { label: "Vagas restantes", value: `${formatQuotaCount(remainingQuotas)} cotas` },
             { label: "Valor arrecadado", value: formatBRL(totalReceived) },
             { label: "Valor restante", value: formatBRL(remaining) },
           ].map(({ label, value }) => (

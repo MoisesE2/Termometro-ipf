@@ -2,10 +2,18 @@ import { z } from 'zod';
 import type { FastifyInstance } from 'fastify';
 
 const QUOTA_UNIT_VALUE = 200;
+const DECIMAL_SCALE_FACTOR = 10;
+
+function hasAtMostOneDecimal(value: number): boolean {
+  return Math.abs(value * DECIMAL_SCALE_FACTOR - Math.round(value * DECIMAL_SCALE_FACTOR)) < 1e-9;
+}
 
 const donationSchema = z.object({
   donorName: z.string().min(2),
-  quotaCount: z.number().int().positive(),
+  quotaCount: z
+    .number()
+    .positive()
+    .refine(hasAtMostOneDecimal, { message: 'Quantidade de cotas deve ter no máximo 1 casa decimal.' }),
   amountPaid: z.number().nonnegative(),
   paymentDate: z.coerce.date(),
 });
@@ -132,7 +140,7 @@ export async function donationRoutes(app: FastifyInstance) {
     });
 
     return {
-      totalQuotas: aggregate._sum.quotaCount ?? 0,
+      totalQuotas: Number(aggregate._sum.quotaCount ?? 0),
       totalReceived: Number(aggregate._sum.amountPaid ?? 0),
       quotaUnitValue: 200,
     };

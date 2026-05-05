@@ -1,4 +1,6 @@
 /** Mesmas regras que `POST /donations` e `POST /donations/bulk` na API (zod). */
+const QUOTA_DECIMAL_SCALE = 10;
+
 export type DonationImportRowInput = {
   donorName: string;
   quotaCount: number;
@@ -13,8 +15,11 @@ export function validateDonationForApiImport(row: DonationImportRowInput): strin
     errors.push("Nome do doador deve ter no mínimo 2 caracteres.");
   }
   const qc = row.quotaCount;
-  if (!Number.isInteger(qc) || qc <= 0) {
-    errors.push("Quantidade de cotas deve ser um número inteiro maior que zero.");
+  const roundedQc = Math.round(qc * QUOTA_DECIMAL_SCALE) / QUOTA_DECIMAL_SCALE;
+  const hasAtMostOneDecimal =
+    Math.abs(qc * QUOTA_DECIMAL_SCALE - Math.round(qc * QUOTA_DECIMAL_SCALE)) < 1e-9;
+  if (!Number.isFinite(qc) || roundedQc <= 0 || !hasAtMostOneDecimal) {
+    errors.push("Quantidade de cotas deve ser um número maior que zero com no máximo 1 casa decimal.");
   }
   const paid = row.amountPaid;
   if (!Number.isFinite(paid) || paid < 0) {
